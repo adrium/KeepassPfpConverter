@@ -15,5 +15,12 @@ namespace Adrium.KeepassPfpConverter
 		public bool upper;
 		public bool number;
 		public bool symbol;
+
+		public static class Type
+		{
+			public const string Stored = "stored";
+			public const string Generated1 = "generated";
+			public const string Generated2 = "generated2";
+		}
 	}
 }

@@ -33,6 +33,7 @@ namespace Adrium.KeepassPfpConverter
 				var backup = JsonConvert.DeserializeObject<BackupObject>(str);
 
 				var crypto = new Crypto(args[1], backup.data["salt"]);
+				var password = new Password(crypto);
 
 				var decrypted = new Dictionary<string, EntryObject>();
 
@@ -42,6 +43,8 @@ namespace Adrium.KeepassPfpConverter
 
 					var json = crypto.Decrypt(item.Value);
 					var entry = JsonConvert.DeserializeObject<EntryObject>(json);
+
+					entry.password = password.GetPassword(entry);
 
 					decrypted.Add(item.Key, entry);
 				}
