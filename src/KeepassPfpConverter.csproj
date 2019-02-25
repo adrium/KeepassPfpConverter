@@ -34,6 +34,9 @@
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>..\packages\BouncyCastle.1.8.4\lib\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
+    <Reference Include="KeePass">
+      <HintPath>..\packages\KeePass.exe</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
@@ -43,9 +46,12 @@
     <Compile Include="Adrium.KeepassPfpConverter\EntryObject.cs" />
     <Compile Include="Adrium.KeepassPfpConverter\Password.cs" />
     <Compile Include="Adrium.KeepassPfpConverter\PfpReader.cs" />
+    <Compile Include="Adrium.KeepassPfpConverter\PfpFormatProvider.cs" />
+    <Compile Include="PfpConverter\PfpConverterExt.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="PfpConverter.plgx.csproj" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
