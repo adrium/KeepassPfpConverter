@@ -9,22 +9,22 @@ namespace Adrium.KeepassPfpConverter
 {
 	public class Crypto
 	{
-		const int N = 32768;
-		const int r = 8;
-		const int p = 1;
+		private const int N = 32768;
+		private const int r = 8;
+		private const int p = 1;
 
-		const int AES_KEY_SIZE = 256;
-		const int TAG_LENTH = 128;
+		private int AES_KEY_SIZE = 256;
+		private const int TAG_LENTH = 128;
 
-		private KeyParameter key;
+		private readonly byte[] passBytes;
+		private readonly KeyParameter keyParameter;
 
 		public Crypto(string masterPassword, string salt)
 		{
-			var passbytes = Encoding.UTF8.GetBytes(masterPassword);
-			var saltbytespre = Convert.FromBase64String(salt);
-			var saltbytes = DoubleEncodeBytes(saltbytespre); // WTF
+			var saltstring = GetArrayAsString(Convert.FromBase64String(salt));
 
-			key = new KeyParameter(Hash(passbytes, saltbytes, AES_KEY_SIZE / 8));
+			passBytes = Encoding.UTF8.GetBytes(masterPassword);
+			keyParameter = new KeyParameter(Hash(saltstring, AES_KEY_SIZE / 8));
 		}
 
 		public string Decrypt(string data)
@@ -34,7 +34,7 @@ namespace Adrium.KeepassPfpConverter
 			var input = Convert.FromBase64String(dataarray[1]);
 
 			var cipher = new GcmBlockCipher(new AesEngine());
-			var parameters = new AeadParameters(key, TAG_LENTH, iv);
+			var parameters = new AeadParameters(keyParameter, TAG_LENTH, iv);
 			cipher.Init(false, parameters);
 
 			var result = Encoding.UTF8.GetString(Process(cipher, input));
@@ -42,9 +42,10 @@ namespace Adrium.KeepassPfpConverter
 			return result;
 		}
 
-		public static byte[] Hash(byte[] P, byte[] S, int length)
+		public byte[] Hash(string salt, int length)
 		{
-			return SCrypt.Generate(P, S, N, r, p, length);
+			var S = Encoding.UTF8.GetBytes(salt);
+			return SCrypt.Generate(passBytes, S, N, r, p, length);
 		}
 
 		private byte[] Process(IAeadBlockCipher cipher, byte[] input)
@@ -57,7 +58,7 @@ namespace Adrium.KeepassPfpConverter
 			return result;
 		}
 
-		private byte[] DoubleEncodeBytes(byte[] input)
+		private static string GetArrayAsString(byte[] input)
 		{
 			var chars = new char[input.Length];
 
@@ -65,7 +66,7 @@ namespace Adrium.KeepassPfpConverter
 				chars[i] = Convert.ToChar(input[i]);
 			}
 
-			var result = Encoding.UTF8.GetBytes(chars);
+			var result = new string(chars);
 			return result;
 		}
 	}
