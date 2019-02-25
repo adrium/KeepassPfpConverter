@@ -42,6 +42,7 @@
     <Compile Include="Adrium.KeepassPfpConverter\BackupObject.cs" />
     <Compile Include="Adrium.KeepassPfpConverter\EntryObject.cs" />
     <Compile Include="Adrium.KeepassPfpConverter\Password.cs" />
+    <Compile Include="Adrium.KeepassPfpConverter\PfpReader.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
