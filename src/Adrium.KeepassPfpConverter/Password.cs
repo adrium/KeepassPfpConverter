@@ -34,7 +34,7 @@ namespace Adrium.KeepassPfpConverter
 			foreach (var chars in charsets)
 				numChars += chars.Length;
 
-			var seen = new HashSet<string>();
+			var seen = new List<string>();
 
 			var result = new char[array.Length];
 
@@ -53,7 +53,8 @@ namespace Adrium.KeepassPfpConverter
 				foreach (var charset in charsets) {
 					if (index < charset.Length) {
 						result[i] = charset[index];
-						seen.Add(charset);
+						if (!seen.Contains(charset))
+							seen.Add(charset);
 						break;
 					}
 					index -= charset.Length;

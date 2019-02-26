@@ -8,7 +8,7 @@ cp src/*.cs build
 cp src/*/*.cs build
 rm -f build/Program.cs
 
-cp packages/Newtonsoft.Json.*/lib/net45/*.dll build
+cp packages/Newtonsoft.Json.*/lib/net20/*.dll build
 cp packages/BouncyCastle.*/lib/*.dll build
 
 
