@@ -5,6 +5,8 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<Reference Include="System" />
+		<Reference Include="System.Drawing" />
+		<Reference Include="System.Windows.Forms" />
 		<Reference Include="Newtonsoft.Json">
 			<HintPath>Newtonsoft.Json.dll</HintPath>
 		</Reference>
@@ -17,6 +19,8 @@
 		<Compile Include="BackupObject.cs" />
 		<Compile Include="Crypto.cs" />
 		<Compile Include="EntryObject.cs" />
+		<Compile Include="OptionForm.cs" />
+		<Compile Include="OptionForm.Designer.cs" />
 		<Compile Include="Password.cs" />
 		<Compile Include="PfpConverterExt.cs" />
 		<Compile Include="PfpFormatProvider.cs" />

@@ -37,6 +37,8 @@
     <Reference Include="KeePass">
       <HintPath>..\packages\KeePass.exe</HintPath>
     </Reference>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
@@ -48,6 +50,8 @@
     <Compile Include="Adrium.KeepassPfpConverter\PfpReader.cs" />
     <Compile Include="Adrium.KeepassPfpConverter\PfpFormatProvider.cs" />
     <Compile Include="PfpConverter\PfpConverterExt.cs" />
+    <Compile Include="Adrium.KeepassPfpConverter\OptionForm.cs" />
+    <Compile Include="Adrium.KeepassPfpConverter\OptionForm.Designer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

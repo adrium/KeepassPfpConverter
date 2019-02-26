@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Windows.Forms;
 using Newtonsoft.Json;
 
 namespace Adrium.KeepassPfpConverter
@@ -11,6 +12,7 @@ namespace Adrium.KeepassPfpConverter
 		{
 			var commands = new List<Command>();
 			commands.Add(new Command { Name = "decrypt", Args = 3, Usage = "<file> <masterPassword> <output>", Cmd = DecryptCommand });
+			commands.Add(new Command { Name = "form", Args = 0, Usage = "", Cmd = ShowFormCommand });
 
 			var cmdname = args.Length < 1 ? "" : args[0];
 			var command = commands.Find(x => x.Name.Equals(cmdname));
@@ -46,6 +48,14 @@ namespace Adrium.KeepassPfpConverter
 			if (e != null) {
 				Console.WriteLine("ERROR: {0}", error);
 				Console.WriteLine("Exception: {0}", e.Message);
+			}
+		}
+
+		private static void ShowFormCommand(string[] args)
+		{
+			var form = new OptionForm();
+			if (form.ShowDialog() == DialogResult.OK) {
+				Console.WriteLine("Master password = {0}", form.MasterPassword);
 			}
 		}
 
