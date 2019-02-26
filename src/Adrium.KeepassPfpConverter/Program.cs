@@ -35,19 +35,10 @@ namespace Adrium.KeepassPfpConverter
 
 		private static void DecryptCommand(string[] args)
 		{
-			string error = null;
-			Exception e = null;
-
 			try {
 				DecryptCommandImpl(args);
-			} catch (Org.BouncyCastle.Crypto.InvalidCipherTextException ex) {
-				e = ex;
-				error = "Decryption not successful. Check master password.";
-			}
-
-			if (e != null) {
-				Console.WriteLine("ERROR: {0}", error);
-				Console.WriteLine("Exception: {0}", e.Message);
+			} catch (PfpReader.ReaderException e) {
+				Console.WriteLine(e.Message);
 			}
 		}
 
