@@ -68,16 +68,11 @@ namespace Adrium.KeepassPfpConverter
 				strings.Set(PwDefs.TitleField, new ProtectedString(protect.ProtectTitle, entry.site));
 				strings.Set(PwDefs.UserNameField, new ProtectedString(protect.ProtectUserName, entry.name));
 				strings.Set(PwDefs.PasswordField, new ProtectedString(protect.ProtectPassword, Password.GetPassword(crypto, entry)));
-				strings.Set(PwDefs.UrlField, new ProtectedString(protect.ProtectUrl, string.Format("https://{0}/", entry.site)));
+				strings.Set(PwDefs.UrlField, new ProtectedString(protect.ProtectUrl, GetSiteForKeepass(entry)));
 
-				if (entry.notes == null)
-					entry.notes = "";
-
-				if (!string.IsNullOrEmpty(entry.revision))
-					entry.notes = string.Format("Revision: {0}\n{1}\n", entry.revision, entry.notes);
-
-				entry.notes = StrUtil.NormalizeNewLines(entry.notes, true);
-				strings.Set(PwDefs.NotesField, new ProtectedString(protect.ProtectNotes, entry.notes));
+				var notes = GetNotesForKeepass(entry);
+				if (notes != null)
+					strings.Set(PwDefs.NotesField, new ProtectedString(protect.ProtectNotes, notes));
 
 				pwStorage.RootGroup.AddEntry(pwEntry, true);
 				i++;
@@ -131,6 +126,30 @@ namespace Adrium.KeepassPfpConverter
 				var subEntries = ConvertGroup(pwSubGroup, slLogger);
 				result.AddRange(subEntries);
 			}
+
+			return result;
+		}
+
+		private static string GetSiteForKeepass(PassEntry entry)
+		{
+			var result = string.Format("https://{0}/", entry.site);
+			return result;
+		}
+
+		private static string GetNotesForKeepass(PassEntry entry)
+		{
+			var result = "";
+
+			if (!string.IsNullOrEmpty(entry.notes))
+				result = entry.notes;
+
+			if (!string.IsNullOrEmpty(entry.revision))
+				result = string.Format("Revision: {0}\n\n{1}", entry.revision, result);
+
+			result = StrUtil.NormalizeNewLines(result, true);
+
+			if (result.Equals(""))
+				result = null;
 
 			return result;
 		}
