@@ -69,6 +69,8 @@ namespace Adrium.KeepassPfpConverter
 		{
 			var backup = new DeserializedBackup();
 
+			entries = GenerateSiteEntries(entries);
+
 			backup.application = APPLICATION;
 			backup.format = FORMAT;
 			backup.data = new Dictionary<string, string>();
@@ -113,6 +115,32 @@ namespace Adrium.KeepassPfpConverter
 		{
 			var converter = new JsonConverter();
 			var result = JsonConvert.DeserializeObject<T>(json, converter);
+			return result;
+		}
+
+		public static IList<BaseEntry> GenerateSiteEntries(IList<BaseEntry> entries)
+		{
+			var result = new List<BaseEntry>();
+			var need = new Dictionary<string, string>();
+			var have = new Dictionary<string, string>();
+
+			foreach (var baseentry in entries) {
+				result.Add(baseentry);
+				if (baseentry is SiteEntry site)
+					have[site.site] = "ok";
+				if (baseentry is PassEntry pass)
+					need[pass.site] = "ok";
+			}
+
+			foreach (var item in have)
+				need.Remove(item.Key);
+
+			foreach (var item in need) {
+				var entry = new SiteEntry();
+				entry.site = item.Key;
+				result.Add(entry);
+			}
+
 			return result;
 		}
 
