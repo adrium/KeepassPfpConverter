@@ -66,6 +66,50 @@ namespace Adrium.KeepassPfpConverter
 
 		}
 
+		public static void Save(Crypto crypto, Stream stream, IList<BaseEntry> entries)
+		{
+			var backup = new DeserializedBackup();
+
+			backup.application = APPLICATION;
+			backup.format = FORMAT;
+			backup.data = new Dictionary<string, string>();
+
+			string json;
+			var jsonsettings = new JsonSerializerSettings {
+				NullValueHandling = NullValueHandling.Ignore,
+			};
+
+			foreach (var baseentry in entries) {
+				json = JsonConvert.SerializeObject(baseentry, jsonsettings);
+				json = crypto.Encrypt(json);
+
+				var key = STORAGE_PREFIX;
+
+				if (baseentry is SiteEntry site) {
+					key += Convert.ToBase64String(crypto.Digest(site.site));
+				}
+
+				if (baseentry is PassEntry pass) {
+					key += Convert.ToBase64String(crypto.Digest(pass.site)) + ":";
+					key += Convert.ToBase64String(crypto.Digest(pass.site + "\0" + pass.name + "\0" + pass.revision));
+				}
+
+				backup.data.Add(key, json);
+			}
+
+			json = crypto.GetHmacSecret();
+			json = JsonConvert.SerializeObject(json);
+			json = crypto.Encrypt(json);
+			backup.data.Add(HMAC_KEY, json);
+
+			backup.data.Add(SALT_KEY, crypto.GetSalt());
+
+			using (var writer = new StreamWriter(stream)) {
+				var str = JsonConvert.SerializeObject(backup);
+				writer.Write(str);
+			}
+		}
+
 		public class ReaderException : Exception
 		{
 			public ReaderException(string message) : base(message) { }

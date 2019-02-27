@@ -1,8 +1,11 @@
-﻿using Org.BouncyCastle.Crypto.Engines;
+﻿using Org.BouncyCastle.Crypto.Digests;
+using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Generators;
+using Org.BouncyCastle.Crypto.Macs;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
 using System;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Adrium.KeepassPfpConverter
@@ -16,9 +19,24 @@ namespace Adrium.KeepassPfpConverter
 		private const int AES_KEY_SIZE = 256;
 		private const int TAG_LENTH = 128;
 
+		private const int IV_LENGTH = 12;
+		private const int HMAC_LENGTH = 32;
+		private const int SALT_LENGTH = 16;
+
 		private byte[] hmacBytes;
 		private byte[] passBytes;
+		private byte[] saltBytes;
 		private byte[] keyBytes;
+
+		public static string GenerateRandom(int length)
+		{
+			var rng = RandomNumberGenerator.Create();
+			var gen = new byte[length];
+			rng.GetBytes(gen);
+
+			var result = Convert.ToBase64String(gen);
+			return result;
+		}
 
 		public void SetMasterPassword(string masterPassword)
 		{
@@ -28,13 +46,35 @@ namespace Adrium.KeepassPfpConverter
 
 		public void SetSalt(string salt)
 		{
-			var saltstring = GetArrayAsString(Convert.FromBase64String(salt));
-			keyBytes = Hash(saltstring, AES_KEY_SIZE / 8);
+			saltBytes = Convert.FromBase64String(salt);
+			keyBytes = Hash(GetArrayAsString(saltBytes), AES_KEY_SIZE / 8);
 		}
 
 		public void SetHmacSecret(string hmac)
 		{
 			hmacBytes = Convert.FromBase64String(hmac);
+		}
+
+		public string GetSalt()
+		{
+			var result = saltBytes == null ? null : Convert.ToBase64String(saltBytes);
+			return result;
+		}
+
+		public string GetHmacSecret()
+		{
+			var result = hmacBytes == null ? null : Convert.ToBase64String(hmacBytes);
+			return result;
+		}
+
+		public void GenerateSalt()
+		{
+			SetSalt(GenerateRandom(SALT_LENGTH));
+		}
+
+		public void GenerateHmacSecret()
+		{
+			SetHmacSecret(GenerateRandom(HMAC_LENGTH));
 		}
 
 		public string Decrypt(string data)
@@ -48,11 +88,44 @@ namespace Adrium.KeepassPfpConverter
 			return result;
 		}
 
+		public string Encrypt(string data)
+		{
+			return Encrypt(data, GenerateRandom(IV_LENGTH));
+		}
+
+		public string Encrypt(string data, string ivstr)
+		{
+			var iv = Convert.FromBase64String(ivstr);
+			var input = Encoding.UTF8.GetBytes(data);
+
+			var enc = Convert.ToBase64String(Process(true, iv, input));
+			var result = ivstr + "_" + enc;
+
+			return result;
+		}
+
 		public byte[] Hash(string salt, int length)
 		{
 			ValidatePass();
 			var S = Encoding.UTF8.GetBytes(salt);
 			return SCrypt.Generate(passBytes, S, N, r, p, length);
+		}
+
+		public byte[] Digest(string data)
+		{
+			ValidateHmac();
+
+			var bytes = Encoding.UTF8.GetBytes(data);
+
+			var hmac = new HMac(new Sha256Digest());
+
+			hmac.Init(new KeyParameter(hmacBytes));
+			var result = new byte[hmac.GetMacSize()];
+
+			hmac.BlockUpdate(bytes, 0, bytes.Length);
+			hmac.DoFinal(result, 0);
+
+			return result;
 		}
 
 		private byte[] Process(bool encrypt, byte[] iv, byte[] input)
@@ -81,6 +154,12 @@ namespace Adrium.KeepassPfpConverter
 
 			var result = new string(chars);
 			return result;
+		}
+
+		private void ValidateHmac()
+		{
+			if (hmacBytes == null)
+				throw new InvalidOperationException("HMAC needed");
 		}
 
 		private void ValidatePass()
