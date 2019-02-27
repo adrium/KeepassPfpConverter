@@ -1,21 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using Adrium.KeepassPfpConverter.Objects;
 
 namespace Adrium.KeepassPfpConverter
 {
-	public class Password
+	public static class Password
 	{
+		private const string GENERATED_TYPE_2 = "generated2";
+
 		private const string LOWERCASE = "abcdefghjkmnpqrstuvwxyz";
 		private const string UPPERCASE = "ABCDEFGHJKMNPQRSTUVWXYZ";
 		private const string NUMBER = "23456789";
 		private const string SYMBOL = "!#$%&()*+,-./:;<=>?@[]^_{|}~";
-
-		private Crypto crypto;
-
-		public Password(Crypto crypto)
-		{
-			this.crypto = crypto;
-		}
 
 		public static string ToPassword(byte[] array, bool lower, bool upper, bool number, bool symbol)
 		{
@@ -63,25 +59,21 @@ namespace Adrium.KeepassPfpConverter
 			return new string(result);
 		}
 
-		public string GetPassword(EntryObject entry)
+		public static string GetPassword(Crypto crypto, PassEntry entry)
 		{
-			string result;
-			if (false) {
-				/* switch */
-			} else if (entry.type.Equals(EntryObject.Type.Stored)) {
-				result = entry.password;
-			} else if (entry.type.Equals(EntryObject.Type.Generated1)) {
-				result = "⚠ Legacy entries not supported";
-			} else if (entry.type.Equals(EntryObject.Type.Generated2)) {
-				result = DerivePassword(entry);
-			} else {
-				result = "⚠ Unknown password type";
-			}
+			var result = "⚠ Unsupported password type";
+
+			if (entry is StoredEntry stored)
+				result = stored.password;
+
+			if (entry is GeneratedEntry generated)
+				if (entry.type.Equals(GENERATED_TYPE_2))
+					result = GeneratePassword2(crypto, generated);
 
 			return result;
 		}
 
-		private string DerivePassword(EntryObject entry)
+		public static string GeneratePassword2(Crypto crypto, GeneratedEntry entry)
 		{
 			var salt = entry.site + "\0" + entry.name;
 			if (!string.IsNullOrEmpty(entry.revision))

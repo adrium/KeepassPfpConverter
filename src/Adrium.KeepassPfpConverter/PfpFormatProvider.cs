@@ -1,4 +1,5 @@
-﻿using KeePass.DataExchange;
+﻿using Adrium.KeepassPfpConverter.Objects;
+using KeePass.DataExchange;
 using KeePassLib;
 using KeePassLib.Interfaces;
 using KeePassLib.Security;
@@ -47,18 +48,16 @@ namespace Adrium.KeepassPfpConverter
 
 			slLogger.StartLogging("PfP import (this may take a while)...", false);
 
-			IList<EntryObject> entries = new List<EntryObject>();
+			var crypto = new Crypto();
+			crypto.SetMasterPassword(form.MasterPassword);
 
-			using (var reader = new StreamReader(sInput)) {
-				var pfpreader = new PfpReader(form.MasterPassword);
-				entries = pfpreader.GetEntries(reader.ReadToEnd());
-			}
+			var entries = PfpConvert.Load(crypto, sInput);
 
 			var protect = pwStorage.MemoryProtection;
 			var i = 0;
 
-			foreach (var entry in entries) {
-				if (entry.type == null)
+			foreach (var baseentry in entries) {
+				if (!(baseentry is PassEntry entry))
 					continue;
 
 				var pwEntry = new PwEntry(true, true);
@@ -66,7 +65,7 @@ namespace Adrium.KeepassPfpConverter
 
 				strings.Set(PwDefs.TitleField, new ProtectedString(protect.ProtectTitle, entry.site));
 				strings.Set(PwDefs.UserNameField, new ProtectedString(protect.ProtectUserName, entry.name));
-				strings.Set(PwDefs.PasswordField, new ProtectedString(protect.ProtectPassword, entry.password));
+				strings.Set(PwDefs.PasswordField, new ProtectedString(protect.ProtectPassword, Password.GetPassword(crypto, entry)));
 				strings.Set(PwDefs.UrlField, new ProtectedString(protect.ProtectUrl, string.Format("https://{0}/", entry.site)));
 
 				if (entry.notes == null)

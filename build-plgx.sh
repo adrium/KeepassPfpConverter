@@ -4,8 +4,7 @@ rm -r build
 
 mkdir build
 cp src/*.plgx.csproj build
-cp src/*.cs build
-cp src/*/*.cs build
+find src -name \*.cs -exec cp {} build \;
 rm -f build/Program.cs
 
 cp packages/Newtonsoft.Json.*/lib/net20/*.dll build

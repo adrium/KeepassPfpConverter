@@ -42,16 +42,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="PfpConverter\PfpConverterExt.cs" />
     <Compile Include="Adrium.KeepassPfpConverter\Program.cs" />
     <Compile Include="Adrium.KeepassPfpConverter\Crypto.cs" />
-    <Compile Include="Adrium.KeepassPfpConverter\BackupObject.cs" />
-    <Compile Include="Adrium.KeepassPfpConverter\EntryObject.cs" />
     <Compile Include="Adrium.KeepassPfpConverter\Password.cs" />
-    <Compile Include="Adrium.KeepassPfpConverter\PfpReader.cs" />
     <Compile Include="Adrium.KeepassPfpConverter\PfpFormatProvider.cs" />
-    <Compile Include="PfpConverter\PfpConverterExt.cs" />
     <Compile Include="Adrium.KeepassPfpConverter\OptionForm.cs" />
     <Compile Include="Adrium.KeepassPfpConverter\OptionForm.Designer.cs" />
+    <Compile Include="Adrium.KeepassPfpConverter\Objects\GeneratedEntry.cs" />
+    <Compile Include="Adrium.KeepassPfpConverter\Objects\StoredEntry.cs" />
+    <Compile Include="Adrium.KeepassPfpConverter\Objects\PassEntry.cs" />
+    <Compile Include="Adrium.KeepassPfpConverter\Objects\BaseEntry.cs" />
+    <Compile Include="Adrium.KeepassPfpConverter\Objects\SiteEntry.cs" />
+    <Compile Include="Adrium.KeepassPfpConverter\PfpConvert.cs" />
+    <Compile Include="Adrium.KeepassPfpConverter\PfpConvert.JsonConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

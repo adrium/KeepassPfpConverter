@@ -37,7 +37,7 @@ namespace Adrium.KeepassPfpConverter
 		{
 			try {
 				DecryptCommandImpl(args);
-			} catch (PfpReader.ReaderException e) {
+			} catch (PfpConvert.ReaderException e) {
 				Console.WriteLine(e.Message);
 			}
 		}
@@ -52,15 +52,19 @@ namespace Adrium.KeepassPfpConverter
 
 		private static void DecryptCommandImpl(string[] args)
 		{
-			using (var input = new StreamReader(args[0]))
+			var jsonsettings = new JsonSerializerSettings {
+				Formatting = Formatting.Indented,
+				NullValueHandling = NullValueHandling.Ignore,
+			};
+
+			using (var input = File.OpenRead(args[0]))
 			using (var output = new StreamWriter(args[2]))
 			{
-				var masterPassword = args[1];
-				var str = input.ReadToEnd();
+				var crypto = new Crypto();
+				crypto.SetMasterPassword(args[1]);
 
-				var pfpreader = new PfpReader(masterPassword);
-				var entries = pfpreader.GetEntries(str);
-				var outputjson = JsonConvert.SerializeObject(entries, Formatting.Indented);
+				var entries = PfpConvert.Load(crypto, input);
+				var outputjson = JsonConvert.SerializeObject(entries, jsonsettings);
 				output.WriteLine(outputjson);
 			}
 		}

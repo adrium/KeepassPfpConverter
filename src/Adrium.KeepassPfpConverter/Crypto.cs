@@ -13,46 +13,59 @@ namespace Adrium.KeepassPfpConverter
 		private const int r = 8;
 		private const int p = 1;
 
-		private int AES_KEY_SIZE = 256;
+		private const int AES_KEY_SIZE = 256;
 		private const int TAG_LENTH = 128;
 
-		private readonly byte[] passBytes;
-		private readonly KeyParameter keyParameter;
+		private byte[] hmacBytes;
+		private byte[] passBytes;
+		private byte[] keyBytes;
 
-		public Crypto(string masterPassword, string salt)
+		public void SetMasterPassword(string masterPassword)
+		{
+			passBytes = Encoding.UTF8.GetBytes(masterPassword);
+			keyBytes = null;
+		}
+
+		public void SetSalt(string salt)
 		{
 			var saltstring = GetArrayAsString(Convert.FromBase64String(salt));
+			keyBytes = Hash(saltstring, AES_KEY_SIZE / 8);
+		}
 
-			passBytes = Encoding.UTF8.GetBytes(masterPassword);
-			keyParameter = new KeyParameter(Hash(saltstring, AES_KEY_SIZE / 8));
+		public void SetHmacSecret(string hmac)
+		{
+			hmacBytes = Convert.FromBase64String(hmac);
 		}
 
 		public string Decrypt(string data)
 		{
 			var dataarray = data.Split('_');
-			var iv  = Convert.FromBase64String(dataarray[0]);
+			var iv = Convert.FromBase64String(dataarray[0]);
 			var input = Convert.FromBase64String(dataarray[1]);
 
-			var cipher = new GcmBlockCipher(new AesEngine());
-			var parameters = new AeadParameters(keyParameter, TAG_LENTH, iv);
-			cipher.Init(false, parameters);
-
-			var result = Encoding.UTF8.GetString(Process(cipher, input));
+			var result = Encoding.UTF8.GetString(Process(false, iv, input));
 
 			return result;
 		}
 
 		public byte[] Hash(string salt, int length)
 		{
+			ValidatePass();
 			var S = Encoding.UTF8.GetBytes(salt);
 			return SCrypt.Generate(passBytes, S, N, r, p, length);
 		}
 
-		private byte[] Process(IAeadBlockCipher cipher, byte[] input)
+		private byte[] Process(bool encrypt, byte[] iv, byte[] input)
 		{
-			var result = new byte[cipher.GetOutputSize(input.Length)];
+			ValidateKey();
 
+			var cipher = new GcmBlockCipher(new AesEngine());
+			var parameters = new AeadParameters(new KeyParameter(keyBytes), TAG_LENTH, iv);
+
+			cipher.Init(encrypt, parameters);
+			var result = new byte[cipher.GetOutputSize(input.Length)];
 			var count = cipher.ProcessBytes(input, 0, input.Length, result, 0);
+
 			cipher.DoFinal(result, count);
 
 			return result;
@@ -68,6 +81,18 @@ namespace Adrium.KeepassPfpConverter
 
 			var result = new string(chars);
 			return result;
+		}
+
+		private void ValidatePass()
+		{
+			if (passBytes == null)
+				throw new InvalidOperationException("Password needed");
+		}
+
+		private void ValidateKey()
+		{
+			if (keyBytes == null)
+				throw new InvalidOperationException("Key needed");
 		}
 	}
 }
