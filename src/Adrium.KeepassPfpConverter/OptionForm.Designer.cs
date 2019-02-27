@@ -41,6 +41,7 @@
 			this.passGroupText.Size = new System.Drawing.Size(256, 22);
 			this.passGroupText.TabIndex = 1;
 
+			this.AcceptButton = formButtonOk;
 			this.ClientSize = new System.Drawing.Size(320, 240);
 			this.Text = "Options";
 			this.Location = new System.Drawing.Point(0, 0);
