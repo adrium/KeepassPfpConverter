@@ -35,7 +35,6 @@ namespace Adrium.KeepassPfpConverter
 			string json;
 			BaseEntry entry;
 
-			var converter = new JsonConverter();
 			crypto.SetSalt(backup.data[SALT_KEY]);
 
 			foreach (var item in backup.data) {
@@ -52,7 +51,7 @@ namespace Adrium.KeepassPfpConverter
 
 				try {
 					json = crypto.Decrypt(item.Value);
-					entry = JsonConvert.DeserializeObject<BaseEntry>(json, converter);
+					entry = DeserializeObjectContainingEntries<BaseEntry>(json);
 					result.Add(entry);
 				} catch (InvalidCipherTextException e) {
 					if (e.Message.Equals("mac check in GCM failed"))
@@ -108,6 +107,13 @@ namespace Adrium.KeepassPfpConverter
 				var str = JsonConvert.SerializeObject(backup);
 				writer.Write(str);
 			}
+		}
+
+		public static T DeserializeObjectContainingEntries<T>(string json)
+		{
+			var converter = new JsonConverter();
+			var result = JsonConvert.DeserializeObject<T>(json, converter);
+			return result;
 		}
 
 		public class ReaderException : Exception

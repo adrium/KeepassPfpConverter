@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
+using Adrium.KeepassPfpConverter.Objects;
 using Newtonsoft.Json;
 
 namespace Adrium.KeepassPfpConverter
@@ -12,6 +13,7 @@ namespace Adrium.KeepassPfpConverter
 		{
 			var commands = new List<Command>();
 			commands.Add(new Command { Name = "decrypt", Args = 3, Usage = "<file> <masterPassword> <output>", Cmd = DecryptCommand });
+			commands.Add(new Command { Name = "encrypt", Args = 3, Usage = "<file> <masterPassword> <output>", Cmd = EncryptCommand });
 			commands.Add(new Command { Name = "form", Args = 0, Usage = "", Cmd = ShowFormCommand });
 
 			var cmdname = args.Length < 1 ? "" : args[0];
@@ -47,6 +49,20 @@ namespace Adrium.KeepassPfpConverter
 			var form = new OptionForm();
 			if (form.ShowDialog() == DialogResult.OK) {
 				Console.WriteLine("Master password = {0}", form.MasterPassword);
+			}
+		}
+
+		private static void EncryptCommand(string[] args)
+		{
+			using (var input = new StreamReader(args[0]))
+			using (var output = File.OpenWrite(args[2])) {
+				var crypto = new Crypto();
+				crypto.SetMasterPassword(args[1]);
+				crypto.GenerateSalt();
+				crypto.GenerateHmacSecret();
+
+				var entries = PfpConvert.DeserializeObjectContainingEntries<BaseEntry[]>(input.ReadToEnd());
+				PfpConvert.Save(crypto, output, entries);
 			}
 		}
 
