@@ -48,7 +48,7 @@ namespace Adrium.KeepassPfpConverter
 			if (form.ShowDialog() != DialogResult.OK)
 				return;
 
-			slLogger.SetText("PfP import (this may take a while)...", LogStatusType.Info);
+			slLogger.SetText("Decrypting backup...", LogStatusType.Info);
 
 			var crypto = new Crypto();
 			crypto.SetMasterPassword(form.MasterPassword);
@@ -62,7 +62,7 @@ namespace Adrium.KeepassPfpConverter
 				if (!(baseentry is PassEntry entry))
 					continue;
 
-				slLogger.SetText(string.Format("Import {1}@{0}", entry.site, entry.name), LogStatusType.AdditionalInfo);
+				slLogger.SetText($"Importing {entry.name}@{entry.site}...", LogStatusType.Info);
 
 				var pwEntry = new PwEntry(true, true);
 				var strings = pwEntry.Strings;
@@ -80,7 +80,7 @@ namespace Adrium.KeepassPfpConverter
 				i++;
 			}
 
-			slLogger.SetText(string.Format("Imported {0} entries.", i), LogStatusType.Info);
+			slLogger.SetText($"Imported {i} entries.", LogStatusType.Info);
 		}
 
 		public override bool Export(PwExportInfo pwExportInfo, Stream sOutput, IStatusLogger slLogger)
@@ -89,19 +89,21 @@ namespace Adrium.KeepassPfpConverter
 			if (form.ShowDialog() != DialogResult.OK)
 				return false;
 
-			slLogger.SetText("PfP export...", LogStatusType.Info);
+			slLogger.SetText("Collecting entries...", LogStatusType.Info);
 
 			var crypto = new Crypto();
 			crypto.SetMasterPassword(form.MasterPassword);
 
 			var entries = ConvertGroup(pwExportInfo.DataGroup, slLogger);
 
+			slLogger.SetText("Encrypting backup...", LogStatusType.Info);
+
 			crypto.GenerateSalt();
 			crypto.GenerateHmacSecret();
 
 			PfpConvert.Save(crypto, sOutput, entries);
 
-			slLogger.SetText("Export finished.", LogStatusType.Info);
+			slLogger.SetText($"Exported {entries.Count} entries.", LogStatusType.Info);
 
 			return true;
 		}
