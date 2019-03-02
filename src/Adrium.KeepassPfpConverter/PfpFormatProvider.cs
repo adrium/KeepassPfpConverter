@@ -1,18 +1,23 @@
 ﻿using Adrium.KeepassPfpConverter.Objects;
 using KeePass.DataExchange;
 using KeePassLib;
+using KeePassLib.Collections;
 using KeePassLib.Interfaces;
 using KeePassLib.Security;
 using KeePassLib.Utility;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace Adrium.KeepassPfpConverter
 {
 	class PfpFormatProvider : FileFormatProvider
 	{
-		private const string NoUrlSite = "pfp.invalid";
+		private const string EmptyUrl = "pfp.invalid";
+		private const string EmptyUsername = "(none)";
+		private const string EmptyPassword = "X";
+		private const string RevisionKey = "Revision";
 
 		public override bool SupportsImport {
 			get { return true; }
@@ -42,6 +47,9 @@ namespace Adrium.KeepassPfpConverter
 			get { return true; }
 		}
 
+		private delegate string StringGetter(string key);
+		private delegate void StringSetter(string key, string value);
+
 		public override void Import(PwDatabase pwStorage, Stream sInput, IStatusLogger slLogger)
 		{
 			var form = new OptionForm();
@@ -53,9 +61,8 @@ namespace Adrium.KeepassPfpConverter
 			var crypto = new Crypto();
 			crypto.SetMasterPassword(form.MasterPassword);
 
-			var entries = PfpConvert.Load(crypto, sInput);
-
 			var protect = pwStorage.MemoryProtection;
+			var entries = PfpConvert.Load(crypto, sInput);
 			var i = 0;
 
 			foreach (var baseentry in entries) {
@@ -64,17 +71,7 @@ namespace Adrium.KeepassPfpConverter
 
 				slLogger.SetText($"Importing {entry.name}@{entry.site}...", LogStatusType.Info);
 
-				var pwEntry = new PwEntry(true, true);
-				var strings = pwEntry.Strings;
-
-				strings.Set(PwDefs.TitleField, new ProtectedString(protect.ProtectTitle, GetTitleForKeepass(entry)));
-				strings.Set(PwDefs.UserNameField, new ProtectedString(protect.ProtectUserName, entry.name));
-				strings.Set(PwDefs.PasswordField, new ProtectedString(protect.ProtectPassword, Password.GetPassword(crypto, entry)));
-				strings.Set(PwDefs.UrlField, new ProtectedString(protect.ProtectUrl, GetSiteForKeepass(entry)));
-
-				var notes = GetNotesForKeepass(entry);
-				if (notes != null)
-					strings.Set(PwDefs.NotesField, new ProtectedString(protect.ProtectNotes, notes));
+				var pwEntry = GetPwEntry(crypto, entry, protect);
 
 				pwStorage.RootGroup.AddEntry(pwEntry, true);
 				i++;
@@ -94,7 +91,7 @@ namespace Adrium.KeepassPfpConverter
 			var crypto = new Crypto();
 			crypto.SetMasterPassword(form.MasterPassword);
 
-			var entries = ConvertGroup(pwExportInfo.DataGroup, slLogger);
+			var entries = ConvertGroup(crypto, pwExportInfo.DataGroup, slLogger);
 
 			slLogger.SetText("Encrypting backup...", LogStatusType.Info);
 
@@ -108,91 +105,152 @@ namespace Adrium.KeepassPfpConverter
 			return true;
 		}
 
-		private IList<BaseEntry> ConvertGroup(PwGroup pwGroup, IStatusLogger slLogger)
+		private IList<BaseEntry> ConvertGroup(Crypto crypto, PwGroup pwGroup, IStatusLogger slLogger)
 		{
 			var result = new List<BaseEntry>();
 
 			foreach (var pwEntry in pwGroup.Entries) {
-				var entry = new StoredEntry();
-
-				entry.type = "stored";
-				entry.name = pwEntry.Strings.Get(PwDefs.UserNameField)?.ReadString();
-				entry.password = pwEntry.Strings.Get(PwDefs.PasswordField)?.ReadString();
-				entry.site = GetSiteForPfp(pwEntry.Strings.Get(PwDefs.UrlField)?.ReadString());
-				entry.notes = GetNotesForPfp(pwEntry.Strings.Get(PwDefs.NotesField)?.ReadString());
-
+				var entry = GetPassEntry(crypto, pwEntry.Strings);
 				result.Add(entry);
 			}
 
 			foreach (var pwSubGroup in pwGroup.Groups) {
-				var subEntries = ConvertGroup(pwSubGroup, slLogger);
+				var subEntries = ConvertGroup(crypto, pwSubGroup, slLogger);
 				result.AddRange(subEntries);
 			}
 
 			return result;
 		}
 
-		private static string GetTitleForKeepass(PassEntry entry)
+		private static PwEntry GetPwEntry(Crypto crypto, PassEntry entry, MemoryProtectionConfig protect)
 		{
-			if (entry.site.Equals(NoUrlSite))
-				return entry.name;
+			var result = new PwEntry(true, true);
+			var strings = result.Strings;
 
-			return entry.site;
-		}
+			StringSetter setter = (key, value) =>
+				strings.Set(key, new ProtectedString(protect.GetProtection(key), value));
 
-		private static string GetSiteForKeepass(PassEntry entry)
-		{
-			if (entry.site.Equals(NoUrlSite))
-				return "";
+			var pw = Password.GetPassword(crypto, entry);
+			if (!pw.Equals(EmptyPassword))
+				setter(PwDefs.PasswordField, pw);
 
-			var result = string.Format("https://{0}/", entry.site);
-			return result;
-		}
+			if (!entry.name.Equals(EmptyUsername))
+				setter(PwDefs.UserNameField, entry.name);
 
-		private static string GetNotesForKeepass(PassEntry entry)
-		{
-			var result = "";
+			if (entry.site.Equals(EmptyUrl)) {
+				setter(PwDefs.TitleField, entry.name);
+			} else {
+				setter(PwDefs.TitleField, entry.site);
+				setter(PwDefs.UrlField, $"https://{entry.site}/");
+			}
 
-			if (!string.IsNullOrEmpty(entry.notes))
-				result = entry.notes;
+			var fields = new Dictionary<string, string>();
+			var notes = ParseNotes(entry.notes ?? "", fields);
 
 			if (!string.IsNullOrEmpty(entry.revision))
-				result = string.Format("Revision: {0}\n\n{1}", entry.revision, result);
+				notes = $"{RevisionKey}: {entry.revision}\n{notes}";
 
-			result = StrUtil.NormalizeNewLines(result, true);
+			notes = notes.Trim();
+			notes = StrUtil.NormalizeNewLines(notes, true);
 
-			if (result.Equals(""))
-				result = null;
+			if (!notes.Equals(""))
+				setter(PwDefs.NotesField, notes);
 
-			return result;
-		}
-
-		private static string GetSiteForPfp(string v)
-		{
-			if (v == null)
-				return NoUrlSite;
-
-			var result = v;
-			result = result.Replace("https://", "");
-			result = result.Replace("http://", "");
-			result = result.Replace("www.", "");
-			if (result.IndexOf("/") >= 0)
-				result = result.Substring(0, result.IndexOf("/"));
-
-			if (result.Equals(""))
-				result = NoUrlSite;
+			foreach (var field in fields)
+				setter(field.Key, field.Value);
 
 			return result;
 		}
 
-		private static string GetNotesForPfp(string v)
+		private static PassEntry GetPassEntry(Crypto crypto, ProtectedStringDictionary strings)
 		{
-			if (v == null)
-				return null;
+			var result = new StoredEntry();
+			var fields = new Dictionary<string, string>();
 
-			var result = StrUtil.NormalizeNewLines(v, false);
-			if (result.Equals(""))
-				result = null;
+			result.type = "stored";
+			result.name = EmptyUsername;
+			result.password = EmptyPassword;
+			result.site = EmptyUrl;
+			result.revision = "";
+
+			StringGetter getter = key =>
+				fields.ContainsKey(key) ? fields[key].Equals("") ? null : fields[key] : null;
+
+			foreach (var field in strings)
+				fields.Add(field.Key, field.Value.ReadString());
+
+			var value = "";
+			if ((value = getter(PwDefs.UserNameField)) != null)
+				result.name = value;
+
+			if ((value = getter(PwDefs.PasswordField)) != null)
+				result.password = value;
+
+			if ((value = getter(PwDefs.UrlField)) != null) {
+				var url = value;
+				url = url.Replace("https://", "");
+				url = url.Replace("http://", "");
+				url = url.Replace("www.", "");
+				if (url.IndexOf("/") >= 0)
+					url = url.Substring(0, url.IndexOf("/"));
+				if (!url.Equals(""))
+					result.site = url;
+			}
+
+			var notes = "";
+			if ((value = getter(PwDefs.NotesField)) != null)
+				notes = ParseNotes(value, fields);
+
+			if (fields.ContainsKey(RevisionKey))
+				result.revision = fields[RevisionKey];
+
+			fields.Remove(PwDefs.UserNameField);
+			fields.Remove(PwDefs.PasswordField);
+			fields.Remove(PwDefs.TitleField);
+			fields.Remove(PwDefs.UrlField);
+			fields.Remove(PwDefs.NotesField);
+			fields.Remove(RevisionKey);
+
+			if (fields.Count > 0) {
+				foreach (var field in fields) {
+					value = field.Value;
+					value = StrUtil.NormalizeNewLines(value, false);
+					value = value.Replace('\n', ' ');
+					notes = $"{field.Key}: {value}\n{notes}";
+				}
+			}
+
+			notes = notes.Trim();
+			notes = StrUtil.NormalizeNewLines(notes, false);
+
+			if (!notes.Equals(""))
+				result.notes = notes;
+
+			return result;
+		}
+
+		private static string ParseNotes(string str, IDictionary<string, string> dict)
+		{
+			var parsing = true;
+			var reader = new StringReader(str);
+			var matcher = new Regex("([^:]+): (.+)");
+			var result = "";
+
+			string line;
+			while ((line = reader.ReadLine()) != null) {
+				if (parsing) {
+					var match = matcher.Match(line);
+					if (match.Success) {
+						dict.Add(match.Groups[1].Value, match.Groups[2].Value);
+					} else {
+						parsing = false;
+					}
+				}
+
+				if (!parsing)
+					result += line + "\n";
+			}
+
 			return result;
 		}
 	}
