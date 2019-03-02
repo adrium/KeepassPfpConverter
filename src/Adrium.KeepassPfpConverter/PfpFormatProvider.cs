@@ -67,7 +67,7 @@ namespace Adrium.KeepassPfpConverter
 				var pwEntry = new PwEntry(true, true);
 				var strings = pwEntry.Strings;
 
-				strings.Set(PwDefs.TitleField, new ProtectedString(protect.ProtectTitle, entry.site));
+				strings.Set(PwDefs.TitleField, new ProtectedString(protect.ProtectTitle, GetTitleForKeepass(entry)));
 				strings.Set(PwDefs.UserNameField, new ProtectedString(protect.ProtectUserName, entry.name));
 				strings.Set(PwDefs.PasswordField, new ProtectedString(protect.ProtectPassword, Password.GetPassword(crypto, entry)));
 				strings.Set(PwDefs.UrlField, new ProtectedString(protect.ProtectUrl, GetSiteForKeepass(entry)));
@@ -132,8 +132,19 @@ namespace Adrium.KeepassPfpConverter
 			return result;
 		}
 
+		private static string GetTitleForKeepass(PassEntry entry)
+		{
+			if (entry.site.Equals(NoUrlSite))
+				return entry.name;
+
+			return entry.site;
+		}
+
 		private static string GetSiteForKeepass(PassEntry entry)
 		{
+			if (entry.site.Equals(NoUrlSite))
+				return "";
+
 			var result = string.Format("https://{0}/", entry.site);
 			return result;
 		}
