@@ -20,6 +20,5 @@ cp packages/BouncyCastle.*/lib/*.dll build
 
 msbuild /p:Configuration=Release
 mono "$ILSPYCONVERT" 2 bin/Release/KeepassPfpConverter.exe > build/PfpConverter.cs
-cat plgx/correct-decompiler.patch | patch -p 1
 mono packages/KeePass.exe -plgx-create build
 mv build.plgx PfpConverter.plgx
