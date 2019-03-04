@@ -16,6 +16,8 @@ namespace Adrium.KeepassPfpConverter
 		private const string HMAC_KEY = "hmac-secret";
 		private const string STORAGE_PREFIX = "site:";
 
+		private const string MAC_MESSAGE = "mac check in GCM failed";
+
 		public static IList<BaseEntry> Load(Crypto crypto, Stream stream)
 		{
 			DeserializedBackup backup;
@@ -32,9 +34,6 @@ namespace Adrium.KeepassPfpConverter
 
 			var result = new List<BaseEntry>();
 
-			string json;
-			BaseEntry entry;
-
 			crypto.SetSalt(backup.data[SALT_KEY]);
 
 			foreach (var item in backup.data) {
@@ -42,23 +41,22 @@ namespace Adrium.KeepassPfpConverter
 					continue; // ignore
 				}
 
-				if (item.Key.Equals(HMAC_KEY)) {
+				var json = "";
+
+				try {
 					json = crypto.Decrypt(item.Value);
+				} catch (InvalidCipherTextException e) when (e.Message.Equals(MAC_MESSAGE)) {
+					throw new ReaderException("Wrong master password");
+				}
+
+				if (item.Key.Equals(HMAC_KEY)) {
 					json = JsonConvert.DeserializeObject<string>(json);
 					crypto.SetHmacSecret(json);
 					continue;
 				}
 
-				try {
-					json = crypto.Decrypt(item.Value);
-					entry = DeserializeObjectContainingEntries<BaseEntry>(json);
-					result.Add(entry);
-				} catch (InvalidCipherTextException e) {
-					if (e.Message.Equals("mac check in GCM failed"))
-						throw new ReaderException("Wrong master password");
-					else
-						throw e;
-				}
+				var entry = DeserializeObjectContainingEntries<BaseEntry>(json);
+				result.Add(entry);
 			}
 
 			return result;
