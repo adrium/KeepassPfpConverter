@@ -10,5 +10,9 @@ namespace PfpConverter
 			host.FileFormatPool.Add(new PfpFormatProvider());
 			return true;
 		}
+
+		public override string UpdateUrl {
+			get { return "https://raw.githack.com/adrium/KeepassPfpConverter/master/plgx/version"; }
+		}
 	}
 }
