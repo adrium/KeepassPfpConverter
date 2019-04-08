@@ -57,6 +57,7 @@
     <Compile Include="Adrium.KeepassPfpConverter\Objects\SiteEntry.cs" />
     <Compile Include="Adrium.KeepassPfpConverter\PfpConvert.cs" />
     <Compile Include="Adrium.KeepassPfpConverter\PfpConvert.JsonConverter.cs" />
+    <Compile Include="Adrium.KeepassPfpConverter\Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
