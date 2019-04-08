@@ -1,6 +1,5 @@
 ﻿using Adrium.KeepassPfpConverter.Objects;
 using KeePassLib;
-using KeePassLib.Collections;
 using KeePassLib.Security;
 using KeePassLib.Utility;
 using System.Collections.Generic;
@@ -19,7 +18,7 @@ namespace Adrium.KeepassPfpConverter
 		private delegate string StringGetter(string key);
 		private delegate void StringSetter(string key, string value);
 
-		public static PwEntry GetPwEntry(Crypto crypto, PassEntry entry, MemoryProtectionConfig protect)
+		public static PwEntry GetKeepassEntry(Crypto crypto, PassEntry entry, MemoryProtectionConfig protect)
 		{
 			var result = new PwEntry(true, true);
 			var strings = result.Strings;
@@ -38,7 +37,7 @@ namespace Adrium.KeepassPfpConverter
 				setter(PwDefs.TitleField, entry.name);
 			} else {
 				setter(PwDefs.TitleField, entry.site);
-				setter(PwDefs.UrlField, $"https://{entry.site}/");
+				setter(PwDefs.UrlField, entry.site);
 			}
 
 			var fields = new Dictionary<string, string>();
@@ -59,64 +58,54 @@ namespace Adrium.KeepassPfpConverter
 			return result;
 		}
 
-		public static PassEntry GetPassEntry(Crypto crypto, ProtectedStringDictionary strings)
+		public static PassEntry GetPfpEntry(Crypto crypto, PwEntry pwEntry)
 		{
 			var result = new StoredEntry();
 			var fields = new Dictionary<string, string>();
-
-			result.type = "stored";
-			result.name = EmptyUsername;
-			result.password = EmptyPassword;
-			result.site = EmptyUrl;
-			result.revision = "";
-
-			StringGetter getter = key =>
-				fields.ContainsKey(key) ? fields[key].Equals("") ? null : fields[key] : null;
-
-			foreach (var field in strings)
-				fields.Add(field.Key, field.Value.ReadString());
-
 			var value = "";
-			if ((value = getter(PwDefs.UserNameField)) != null)
-				result.name = value;
 
-			if ((value = getter(PwDefs.PasswordField)) != null)
-				result.password = value;
+			foreach (var field in pwEntry.Strings) {
+				var key = field.Key;
+				value = field.Value.ReadString();
 
-			if ((value = getter(PwDefs.UrlField)) != null) {
-				var url = value;
-				url = url.Replace("https://", "");
-				url = url.Replace("http://", "");
-				url = url.Replace("www.", "");
-				if (url.IndexOf("/") >= 0)
-					url = url.Substring(0, url.IndexOf("/"));
-				if (!url.Equals(""))
-					result.site = url;
+				if (value.Equals(string.Empty))
+					continue;
+
+				if (key.Equals(PwDefs.UrlField))
+					value = GetSitePart(value);
+
+				if (key.Equals(PwDefs.NotesField))
+					value = ParseNotes(value, fields);
+
+				fields.Add(key, value);
 			}
 
+			StringGetter getter = key =>
+				fields.ContainsKey(key) ? fields[key] : null;
+
 			var notes = "";
-			if ((value = getter(PwDefs.NotesField)) != null)
-				notes = ParseNotes(value, fields);
+			var textnotes = getter(PwDefs.NotesField);
 
-			if (fields.ContainsKey(RevisionKey))
-				result.revision = fields[RevisionKey];
+			result.name = getter(PwDefs.UserNameField) ?? EmptyUsername;
+			result.password = getter(PwDefs.PasswordField) ?? EmptyPassword;
+			result.site = getter(PwDefs.UrlField) ?? EmptyUrl;
+			result.revision = getter(RevisionKey) ?? "";
 
+			fields.Remove(PwDefs.TitleField);
 			fields.Remove(PwDefs.UserNameField);
 			fields.Remove(PwDefs.PasswordField);
-			fields.Remove(PwDefs.TitleField);
 			fields.Remove(PwDefs.UrlField);
 			fields.Remove(PwDefs.NotesField);
 			fields.Remove(RevisionKey);
 
-			if (fields.Count > 0) {
-				foreach (var field in fields) {
-					value = field.Value;
-					value = StrUtil.NormalizeNewLines(value, false);
-					value = value.Replace('\n', ' ');
-					notes = $"{field.Key}: {value}\n{notes}";
-				}
+			foreach (var field in fields) {
+				value = field.Value;
+				value = StrUtil.NormalizeNewLines(value, false);
+				value = value.Replace('\n', ' ');
+				notes += $"{field.Key}: {value}\n";
 			}
 
+			notes += "\n" + textnotes;
 			notes = notes.Trim();
 			notes = StrUtil.NormalizeNewLines(notes, false);
 
@@ -147,6 +136,26 @@ namespace Adrium.KeepassPfpConverter
 				if (!parsing)
 					result += line + "\n";
 			}
+
+			if (result.Equals(""))
+				return null;
+
+			return result;
+		}
+
+		public static string GetSitePart(string url)
+		{
+			var result = url;
+
+			result = result.Replace("https://", "");
+			result = result.Replace("http://", "");
+			result = result.Replace("www.", "");
+
+			if (result.IndexOf("/") >= 0)
+				result = result.Substring(0, result.IndexOf("/"));
+
+			if (result.Equals(""))
+				return null;
 
 			return result;
 		}

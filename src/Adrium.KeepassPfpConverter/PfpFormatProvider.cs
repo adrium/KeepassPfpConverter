@@ -59,7 +59,7 @@ namespace Adrium.KeepassPfpConverter
 
 				slLogger.SetText($"Importing {entry.name}@{entry.site}...", LogStatusType.Info);
 
-				var pwEntry = Util.GetPwEntry(crypto, entry, protect);
+				var pwEntry = Util.GetKeepassEntry(crypto, entry, protect);
 
 				pwStorage.RootGroup.AddEntry(pwEntry, true);
 				i++;
@@ -98,7 +98,7 @@ namespace Adrium.KeepassPfpConverter
 			var result = new List<BaseEntry>();
 
 			foreach (var pwEntry in pwGroup.Entries) {
-				var entry = Util.GetPassEntry(crypto, pwEntry.Strings);
+				var entry = Util.GetPfpEntry(crypto, pwEntry);
 				result.Add(entry);
 			}
 
