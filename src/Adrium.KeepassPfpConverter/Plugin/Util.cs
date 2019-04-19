@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace Adrium.KeepassPfpConverter
+namespace Adrium.KeepassPfpConverter.Plugin
 {
 	public static class Util
 	{

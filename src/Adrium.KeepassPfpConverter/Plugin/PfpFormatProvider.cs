@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 
-namespace Adrium.KeepassPfpConverter
+namespace Adrium.KeepassPfpConverter.Plugin
 {
 	class PfpFormatProvider : FileFormatProvider
 	{

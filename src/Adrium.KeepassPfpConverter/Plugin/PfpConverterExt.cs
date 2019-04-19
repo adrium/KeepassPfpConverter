@@ -1,4 +1,4 @@
-﻿using Adrium.KeepassPfpConverter;
+﻿using Adrium.KeepassPfpConverter.Plugin;
 using KeePass.Plugins;
 
 namespace PfpConverter

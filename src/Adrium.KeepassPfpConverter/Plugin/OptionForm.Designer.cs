@@ -1,4 +1,4 @@
-﻿namespace Adrium.KeepassPfpConverter
+﻿namespace Adrium.KeepassPfpConverter.Plugin
 {
 	public partial class OptionForm
 	{
