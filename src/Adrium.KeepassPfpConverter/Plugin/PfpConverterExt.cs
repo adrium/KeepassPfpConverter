@@ -12,7 +12,7 @@ namespace PfpConverter
 		}
 
 		public override string UpdateUrl {
-			get { return "https://raw.githack.com/adrium/KeepassPfpConverter/master/plgx/version"; }
+			get { return "https://raw.githack.com/adrium/KeepassPfpConverter/master/src/version.txt"; }
 		}
 	}
 }

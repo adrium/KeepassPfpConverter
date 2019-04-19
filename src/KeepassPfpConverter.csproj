@@ -20,12 +20,20 @@
     <ExternalConsole>true</ExternalConsole>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <AllowedReferenceRelatedFileExtensions>none</AllowedReferenceRelatedFileExtensions>
     <Optimize>true</Optimize>
     <OutputPath>..\bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ExternalConsole>true</ExternalConsole>
     <MSBuildWarningsAsMessages>MSB3276</MSBuildWarningsAsMessages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Plugin|AnyCPU' ">
+    <AllowedReferenceRelatedFileExtensions>none</AllowedReferenceRelatedFileExtensions>
+    <Optimize>true</Optimize>
+    <OutputPath>..\bin\Plugin</OutputPath>
+    <OutputType>Library</OutputType>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -45,13 +53,16 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Adrium.KeepassPfpConverter\*.cs" />
     <Compile Include="Adrium.KeepassPfpConverter\Objects\*.cs" />
-    <Compile Include="Adrium.KeepassPfpConverter\Plugin\*.cs" />
-    <Compile Include="Adrium.KeepassPfpConverter\Program\*.cs" />
+    <Compile Include="Adrium.KeepassPfpConverter\Plugin\*.cs" Condition=" '$(Configuration)' == 'Plugin' " />
+    <Compile Include="Adrium.KeepassPfpConverter\Program\*.cs" Condition=" '$(Configuration)' != 'Plugin' " />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="app.config" />
-    <None Include="PfpConverter.plgx.csproj" />
+    <None Include="version.txt" />
+    <None Include="app.config" Condition=" '$(Configuration)' != 'Plugin' " />
+    <None Include="PfpConverter.plgx.csproj" Condition=" '$(Configuration)' == 'Plugin' ">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
