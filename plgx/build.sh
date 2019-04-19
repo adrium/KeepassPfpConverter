@@ -13,7 +13,7 @@ fi
 rm -r build
 
 mkdir build
-cp plgx/*.csproj build
+cp src/*.plgx.csproj build
 
 cp packages/Newtonsoft.Json.*/lib/net20/*.dll build
 cp packages/BouncyCastle.*/lib/*.dll build
