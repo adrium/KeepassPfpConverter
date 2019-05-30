@@ -85,12 +85,12 @@ namespace Adrium.KeepassPfpConverter
 				var key = STORAGE_PREFIX;
 
 				if (baseentry is SiteEntry site) {
-					key += Convert.ToBase64String(crypto.Digest(site.site));
+					key += crypto.Digest(site.site);
 				}
 
 				if (baseentry is PassEntry pass) {
-					key += Convert.ToBase64String(crypto.Digest(pass.site)) + ":";
-					key += Convert.ToBase64String(crypto.Digest(pass.site + "\0" + pass.name + "\0" + pass.revision));
+					key += crypto.Digest(pass.site) + ":";
+					key += crypto.Digest(pass.site + "\0" + pass.name + "\0" + pass.revision);
 				}
 
 				backup.data.Add(key, json);

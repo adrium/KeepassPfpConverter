@@ -13,8 +13,9 @@ namespace Adrium.KeepassPfpConverter
 		private const string NUMBER = "23456789";
 		private const string SYMBOL = "!#$%&()*+,-./:;<=>?@[]^_{|}~";
 
-		public static string ToPassword(byte[] array, bool lower, bool upper, bool number, bool symbol)
+		public static string ToPassword(string bytes, bool lower, bool upper, bool number, bool symbol)
 		{
+			var array = Convert.FromBase64String(bytes);
 			var charsets = new List<string>();
 
 			if (lower)

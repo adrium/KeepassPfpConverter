@@ -47,7 +47,8 @@ namespace Adrium.KeepassPfpConverter
 		public void SetSalt(string salt)
 		{
 			saltBytes = Convert.FromBase64String(salt);
-			keyBytes = Hash(GetArrayAsString(saltBytes), AES_KEY_SIZE / 8);
+			var key = Hash(GetArrayAsString(saltBytes), AES_KEY_SIZE / 8);
+			keyBytes = Convert.FromBase64String(key);
 		}
 
 		public void SetHmacSecret(string hmac)
@@ -104,14 +105,16 @@ namespace Adrium.KeepassPfpConverter
 			return result;
 		}
 
-		public byte[] Hash(string salt, int length)
+		public string Hash(string salt, int length)
 		{
 			ValidatePass();
 			var S = Encoding.UTF8.GetBytes(salt);
-			return SCrypt.Generate(passBytes, S, N, r, p, length);
+			var hash = SCrypt.Generate(passBytes, S, N, r, p, length);
+			var result = Convert.ToBase64String(hash);
+			return result;
 		}
 
-		public byte[] Digest(string data)
+		public string Digest(string data)
 		{
 			ValidateHmac();
 
@@ -120,10 +123,12 @@ namespace Adrium.KeepassPfpConverter
 			var hmac = new HMac(new Sha256Digest());
 
 			hmac.Init(new KeyParameter(hmacBytes));
-			var result = new byte[hmac.GetMacSize()];
+			var digest = new byte[hmac.GetMacSize()];
 
 			hmac.BlockUpdate(bytes, 0, bytes.Length);
-			hmac.DoFinal(result, 0);
+			hmac.DoFinal(digest, 0);
+
+			var result = Convert.ToBase64String(digest);
 
 			return result;
 		}
