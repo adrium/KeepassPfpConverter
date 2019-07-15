@@ -45,8 +45,11 @@ namespace Adrium.KeepassPfpConverter
 
 				try {
 					json = crypto.Decrypt(item.Value);
-				} catch (InvalidCipherTextException e) when (e.Message.Equals(MAC_MESSAGE)) {
-					throw new ReaderException("Wrong master password");
+				} catch (InvalidCipherTextException e) {
+					if (e.Message.Equals(MAC_MESSAGE))
+						throw new ReaderException("Wrong master password");
+					else
+						throw;
 				}
 
 				if (item.Key.Equals(HMAC_KEY)) {
