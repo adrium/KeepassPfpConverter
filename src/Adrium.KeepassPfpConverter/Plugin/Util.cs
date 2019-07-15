@@ -68,14 +68,14 @@ namespace Adrium.KeepassPfpConverter.Plugin
 				var key = field.Key;
 				value = field.Value.ReadString();
 
-				if (value.Equals(string.Empty))
-					continue;
-
 				if (key.Equals(PwDefs.UrlField))
 					value = GetSitePart(value);
 
 				if (key.Equals(PwDefs.NotesField))
 					value = ParseNotes(value, fields);
+
+				if (value.Equals(""))
+					continue;
 
 				fields.Add(key, value);
 			}
@@ -84,7 +84,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 				fields.ContainsKey(key) ? fields[key] : null;
 
 			var notes = "";
-			var textnotes = getter(PwDefs.NotesField);
+			var textnotes = getter(PwDefs.NotesField) ?? "";
 
 			result.type = "stored";
 			result.name = getter(PwDefs.UserNameField) ?? EmptyUsername;
@@ -138,9 +138,6 @@ namespace Adrium.KeepassPfpConverter.Plugin
 					result += line + "\n";
 			}
 
-			if (result.Equals(""))
-				return null;
-
 			return result;
 		}
 
@@ -154,9 +151,6 @@ namespace Adrium.KeepassPfpConverter.Plugin
 
 			if (result.IndexOf("/") >= 0)
 				result = result.Substring(0, result.IndexOf("/"));
-
-			if (result.Equals(""))
-				return null;
 
 			return result;
 		}
