@@ -86,6 +86,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			var notes = "";
 			var textnotes = getter(PwDefs.NotesField);
 
+			result.type = "stored";
 			result.name = getter(PwDefs.UserNameField) ?? EmptyUsername;
 			result.password = getter(PwDefs.PasswordField) ?? EmptyPassword;
 			result.site = getter(PwDefs.UrlField) ?? EmptyUrl;

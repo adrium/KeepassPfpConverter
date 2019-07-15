@@ -92,6 +92,9 @@ namespace Adrium.KeepassPfpConverter
 				}
 
 				if (baseentry is PassEntry pass) {
+					if (pass.type == null)
+						throw new ArgumentException("No type set");
+
 					key += crypto.Digest(pass.site) + ":";
 					key += crypto.Digest(pass.site + "\0" + pass.name + "\0" + pass.revision);
 				}
