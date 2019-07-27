@@ -81,6 +81,10 @@ namespace Adrium.KeepassPfpConverter
 		public string Decrypt(string data)
 		{
 			var dataarray = data.Split('_');
+
+			if (dataarray.Length < 2)
+				throw new InvalidOperationException("IV needed");
+
 			var iv = Convert.FromBase64String(dataarray[0]);
 			var input = Convert.FromBase64String(dataarray[1]);
 

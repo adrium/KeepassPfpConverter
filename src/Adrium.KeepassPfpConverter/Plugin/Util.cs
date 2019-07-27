@@ -106,7 +106,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 				notes += $"{field.Key}: {value}\n";
 			}
 
-			notes += "\n" + textnotes;
+			notes += textnotes;
 			notes = notes.Trim();
 			notes = StrUtil.NormalizeNewLines(notes, false);
 
