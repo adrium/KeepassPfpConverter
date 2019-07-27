@@ -20,11 +20,9 @@ namespace Adrium.KeepassPfpConverter
 
 		public static IList<BaseEntry> Load(Crypto crypto, Stream stream)
 		{
-			DeserializedBackup backup;
-			using (var reader = new StreamReader(stream)) {
-				var str = reader.ReadToEnd();
-				backup = JsonConvert.DeserializeObject<DeserializedBackup>(str);
-			}
+			var reader = new StreamReader(stream);
+			var str = reader.ReadToEnd();
+			var backup = JsonConvert.DeserializeObject<DeserializedBackup>(str);
 
 			if (!backup.application.Equals(APPLICATION))
 				throw new ReaderException("Unsupported format");
@@ -114,10 +112,10 @@ namespace Adrium.KeepassPfpConverter
 
 			backup.data.Add(SALT_KEY, crypto.GetSalt());
 
-			using (var writer = new StreamWriter(stream)) {
-				var str = JsonConvert.SerializeObject(backup);
-				writer.Write(str);
-			}
+			var writer = new StreamWriter(stream);
+			var str = JsonConvert.SerializeObject(backup);
+			writer.Write(str);
+			writer.Flush();
 		}
 
 		public static T DeserializeObjectContainingEntries<T>(string json)
