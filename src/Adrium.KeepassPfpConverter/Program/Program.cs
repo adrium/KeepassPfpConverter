@@ -49,8 +49,6 @@ namespace Adrium.KeepassPfpConverter
 			using (var output = File.OpenWrite(args[2])) {
 				var crypto = new Crypto();
 				crypto.SetMasterPassword(args[1]);
-				crypto.GenerateSalt();
-				crypto.GenerateHmacSecret();
 
 				var entries = PfpConvert.DeserializeObjectContainingEntries<BaseEntry[]>(input.ReadToEnd());
 				PfpConvert.Save(crypto, output, entries);

@@ -72,6 +72,11 @@ namespace Adrium.KeepassPfpConverter
 
 			entries = GenerateSiteEntries(entries);
 
+			if (crypto.GetSalt() == null)
+				crypto.GenerateSalt();
+			if (crypto.GetHmacSecret() == null)
+				crypto.GenerateHmacSecret();
+
 			backup.application = APPLICATION;
 			backup.format = FORMAT;
 			backup.data = new Dictionary<string, string>();

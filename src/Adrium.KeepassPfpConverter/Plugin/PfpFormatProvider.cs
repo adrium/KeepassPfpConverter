@@ -83,9 +83,6 @@ namespace Adrium.KeepassPfpConverter.Plugin
 
 			slLogger.SetText("Encrypting backup...", LogStatusType.Info);
 
-			crypto.GenerateSalt();
-			crypto.GenerateHmacSecret();
-
 			PfpConvert.Save(crypto, sOutput, entries);
 
 			slLogger.SetText($"Exported {entries.Count} entries.", LogStatusType.Info);
