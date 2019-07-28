@@ -67,6 +67,7 @@ namespace Adrium.KeepassPfpConverter.Test
 
 			var result = Util.GetKeepassEntry(new Crypto(), expected, new MemoryProtectionConfig());
 
+			Assert.IsFalse(result.Strings.Exists(Util.RevisionField));
 			Assert.IsFalse(result.Strings.Exists(PwDefs.NotesField));
 		}
 
@@ -80,6 +81,7 @@ namespace Adrium.KeepassPfpConverter.Test
 			var result = Util.GetKeepassEntry(new Crypto(), expected, new MemoryProtectionConfig());
 			var resultidx = new PwEntryIndexer(result, null);
 
+			Assert.AreEqual(null, resultidx[Util.RevisionField]);
 			Assert.AreEqual("message", resultidx[PwDefs.NotesField]);
 		}
 
@@ -93,7 +95,8 @@ namespace Adrium.KeepassPfpConverter.Test
 			var result = Util.GetKeepassEntry(new Crypto(), expected, new MemoryProtectionConfig());
 			var resultidx = new PwEntryIndexer(result, null);
 
-			Assert.AreEqual("Revision: test", resultidx[PwDefs.NotesField]);
+			Assert.AreEqual("test", resultidx[Util.RevisionField]);
+			Assert.AreEqual(null, resultidx[PwDefs.NotesField]);
 		}
 
 		[Test]
@@ -106,7 +109,8 @@ namespace Adrium.KeepassPfpConverter.Test
 			var result = Util.GetKeepassEntry(new Crypto(), expected, new MemoryProtectionConfig());
 			var resultidx = new PwEntryIndexer(result, null);
 
-			Assert.AreEqual("Revision: test\r\nmessage", resultidx[PwDefs.NotesField]);
+			Assert.AreEqual("test", resultidx[Util.RevisionField]);
+			Assert.AreEqual("message", resultidx[PwDefs.NotesField]);
 		}
 
 		[Test]
@@ -119,7 +123,8 @@ namespace Adrium.KeepassPfpConverter.Test
 			var result = Util.GetKeepassEntry(new Crypto(), expected, new MemoryProtectionConfig());
 			var resultidx = new PwEntryIndexer(result, null);
 
-			Assert.AreEqual("Revision: test\r\nmessage", resultidx[PwDefs.NotesField]);
+			Assert.AreEqual("test", resultidx[Util.RevisionField]);
+			Assert.AreEqual("message", resultidx[PwDefs.NotesField]);
 			Assert.AreEqual("Bar: Baz", resultidx["Foo"]);
 			Assert.AreEqual("OK", resultidx["Test"]);
 		}
@@ -155,7 +160,7 @@ namespace Adrium.KeepassPfpConverter.Test
 		{
 			var entry = new PwEntry(true, true);
 			var entryidx = new PwEntryIndexer(entry, new MemoryProtectionConfig()) {
-				[PwDefs.NotesField] = "Revision: test"
+				[Util.RevisionField] = "test"
 			};
 
 			var result = Util.GetPfpEntry(new Crypto(), entry);
@@ -183,7 +188,8 @@ namespace Adrium.KeepassPfpConverter.Test
 		{
 			var entry = new PwEntry(true, true);
 			var entryidx = new PwEntryIndexer(entry, new MemoryProtectionConfig()) {
-				[PwDefs.NotesField] = "Revision: test\r\nSecurity: High\r\nmessage\r\n",
+				[Util.RevisionField] = "test",
+				[PwDefs.NotesField] = "Security: High\r\nmessage\r\n",
 				["Test"] = "OK",
 				["Foo"] = "Bar\r\nBaz"
 			};

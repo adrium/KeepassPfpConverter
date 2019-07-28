@@ -8,10 +8,11 @@ namespace Adrium.KeepassPfpConverter.Plugin
 {
 	public static class Util
 	{
+		public const string RevisionField = "Revision";
+
 		private const string EmptyUrl = "pfp.invalid";
 		private const string EmptyUsername = "(none)";
 		private const string EmptyPassword = "X";
-		private const string RevisionKey = "Revision";
 
 		public static PwEntry GetKeepassEntry(Crypto crypto, PassEntry entry, MemoryProtectionConfig protect)
 		{
@@ -26,6 +27,9 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			if (!entry.name.Equals(EmptyUsername))
 				resultidx[PwDefs.UserNameField] = entry.name;
 
+			if (!entry.revision.Equals(""))
+				resultidx[RevisionField] = entry.revision;
+
 			if (entry.site.Equals(EmptyUrl)) {
 				resultidx[PwDefs.TitleField] = entry.name;
 			} else {
@@ -35,9 +39,6 @@ namespace Adrium.KeepassPfpConverter.Plugin
 
 			var fields = new Dictionary<string, string>();
 			var notes = ParseNotes(entry.notes ?? "", fields);
-
-			if (!entry.revision.Equals(""))
-				notes = $"{RevisionKey}: {entry.revision}\n{notes}";
 
 			notes = notes.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n").Trim();
 
@@ -58,7 +59,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 				{ PwDefs.PasswordField, EmptyPassword },
 				{ PwDefs.UrlField, EmptyUrl },
 				{ PwDefs.NotesField, "" },
-				{ RevisionKey, "" }
+				{ RevisionField, "" }
 			};
 
 			foreach (var field in pwEntry.Strings)
@@ -73,14 +74,14 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			result.site = fields[PwDefs.UrlField];
 			result.name = fields[PwDefs.UserNameField];
 			result.password = fields[PwDefs.PasswordField];
-			result.revision = fields[RevisionKey];
+			result.revision = fields[RevisionField];
 
 			fields.Remove(PwDefs.TitleField);
 			fields.Remove(PwDefs.UserNameField);
 			fields.Remove(PwDefs.PasswordField);
 			fields.Remove(PwDefs.UrlField);
 			fields.Remove(PwDefs.NotesField);
-			fields.Remove(RevisionKey);
+			fields.Remove(RevisionField);
 
 			foreach (var field in fields) {
 				var value = field.Value.Replace("\r\n", " ").Replace("\n", " ");
