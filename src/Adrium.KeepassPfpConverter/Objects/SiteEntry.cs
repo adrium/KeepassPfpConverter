@@ -2,7 +2,6 @@
 {
 	public class SiteEntry : BaseEntry
 	{
-		public string site;
 		public string alias;
 	}
 }

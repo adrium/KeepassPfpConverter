@@ -2,6 +2,6 @@
 {
 	public abstract class BaseEntry
 	{
-		public string notes;
+		public string site;
 	}
 }
