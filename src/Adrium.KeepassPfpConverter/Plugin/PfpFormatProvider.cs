@@ -51,6 +51,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 
 			var protect = pwStorage.MemoryProtection;
 			var entries = PfpConvert.Load(crypto, sInput);
+			var aliases = PfpConvert.GetAliases(entries);
 			var i = 0;
 
 			foreach (var baseentry in entries) {

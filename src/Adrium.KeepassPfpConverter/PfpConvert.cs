@@ -151,6 +151,26 @@ namespace Adrium.KeepassPfpConverter
 			return result;
 		}
 
+		public static IDictionary<string, IList<string>> GetAliases(IList<BaseEntry> entries)
+		{
+			var result = new Dictionary<string, IList<string>>();
+
+			foreach (var baseentry in entries) {
+				if (!(baseentry is SiteEntry entry))
+					continue;
+
+				if (entry.alias == null)
+					continue;
+
+				if (!result.ContainsKey(entry.alias))
+					result[entry.alias] = new List<string>();
+
+				result[entry.alias].Add(entry.site);
+			}
+
+			return result;
+		}
+
 		public class ReaderException : Exception
 		{
 			public ReaderException(string message) : base(message) { }

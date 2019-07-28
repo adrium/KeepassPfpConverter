@@ -65,6 +65,24 @@ namespace Adrium.KeepassPfpConverter.Test
 			var entry3 = result.First(x => x is SiteEntry) as SiteEntry;
 		}
 
+		[Test]
+		public void TestGetAliases()
+		{
+			var entry1 = Data.StoredEntry;
+			var entry2 = Data.AliasEntry;
+			var entry3 = Data.SiteEntry;
+			entry3.site = "unrelated.local";
+
+			var list = new List<BaseEntry> { entry1, entry2, entry3 };
+			var expected = new Dictionary<string, IList<string>> {
+				["example.com"] = new List<string> { "example.net" }
+			};
+
+			var result = PfpConvert.GetAliases(list);
+
+			Assert.AreEqual(expected, result);
+		}
+
 		private void AssertEntries(IList<BaseEntry> list)
 		{
 			var expected1 = Data.SiteEntry;
