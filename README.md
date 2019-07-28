@@ -7,6 +7,14 @@ Compatible with [Pain-free Passwords](https://pfp.works) and [Adrium Easy Pass](
 
 Join the discussion on the [SourceForge announcement thread](https://sourceforge.net/p/keepass/discussion/329220/thread/cc159b85bd/)
 
+## Todo
+
+* Option to recover generated entries for matching master password
+* Option to save master password to database
+* Save site aliases in comment
+* Generate password from command-line
+* Implement key generator based on PwDatabase.MasterKey / PwEntryForm in GlobalWindowManager.TopWindow
+
 ## Features
 
 * Import & Export supported
