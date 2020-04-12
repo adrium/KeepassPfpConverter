@@ -30,25 +30,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data.cs" />
-    <Compile Include="CryptoTest.cs" />
-    <Compile Include="PasswordTest.cs" />
-    <Compile Include="PluginUtilTest.cs" />
-    <Compile Include="PfpConvertTest.cs" />
-    <Compile Include="Helper.cs" />
+    <ProjectReference Include="..\src\app.csproj">
+      <Project>{A5E17545-754C-44BA-B2AF-1560FF894558}</Project>
+      <Name>app</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\src\KeepassPfpConverter.csproj">
-      <Project>{A5E17545-754C-44BA-B2AF-1560FF894558}</Project>
-      <Name>KeepassPfpConverter</Name>
-    </ProjectReference>
+    <Compile Include="Tests\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="data\passwords.json">
-      <LogicalName>data.passwords.json</LogicalName>
+    <EmbeddedResource Include="Data\passwords.json">
+      <LogicalName>passwords.json</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -3,37 +3,62 @@ using Adrium.KeepassPfpConverter.Objects;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+// https://github.com/JamesNK/Newtonsoft.Json/issues/1331
 namespace Adrium.KeepassPfpConverter
 {
-	public static partial class PfpConvert
+	public class JsonConvert
 	{
-		private class JsonConverter : JsonConverter<BaseEntry>
+		private const string TYPE_KEY = "type";
+		private const string STORED_TYPE = "stored";
+
+		private readonly JsonSerializerSettings settings;
+
+		public JsonConvert() : this(new JsonSerializerSettings()) { }
+
+		public JsonConvert(JsonSerializerSettings settings)
 		{
+			settings.NullValueHandling = NullValueHandling.Ignore;
+			settings.Converters.Add(new EntryConverter());
+			this.settings = settings;
+		}
+
+		public string Serialize(object o)
+		{
+			return Newtonsoft.Json.JsonConvert.SerializeObject(o, settings);
+		}
+
+		public T Deserialize<T>(string json)
+		{
+			return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(json, settings);
+		}
+
+		private class EntryConverter : JsonConverter<BaseEntry>
+		{
+			private bool block; // Prevent recursion
+			public override bool CanRead => base.CanRead && (block = !block);
+			public override bool CanWrite => base.CanWrite && (block = !block);
+
 			public override BaseEntry ReadJson(JsonReader reader, Type objectType, BaseEntry existingValue, bool hasExistingValue, JsonSerializer serializer)
 			{
-				if (reader.TokenType != JsonToken.StartObject)
-					throw new InvalidOperationException();
-
+				block = true;
 				var obj = JObject.Load(reader);
-				var type = obj.Value<string>("type");
+				var str = obj.Value<string>(TYPE_KEY);
 
-				BaseEntry result;
+				var type = str == null ? typeof(SiteEntry) :
+					STORED_TYPE.Equals(str) ? typeof(StoredEntry) :
+					typeof(GeneratedEntry);
 
-				if (type == null)
-					result = obj.ToObject<SiteEntry>();
-
-				else if (type.Equals("stored"))
-					result = obj.ToObject<StoredEntry>();
-
-				else
-					result = obj.ToObject<GeneratedEntry>();
-
+				var result = (BaseEntry)serializer.Deserialize(obj.CreateReader(), type);
 				return result;
 			}
 
 			public override void WriteJson(JsonWriter writer, BaseEntry value, JsonSerializer serializer)
 			{
-				throw new InvalidOperationException();
+				block = true;
+				var obj = JObject.FromObject(value, serializer);
+				if (value is StoredEntry)
+					obj.AddFirst(new JProperty(TYPE_KEY, STORED_TYPE));
+				obj.WriteTo(writer);
 			}
 		}
 	}

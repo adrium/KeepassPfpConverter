@@ -14,12 +14,12 @@ namespace Adrium.KeepassPfpConverter.Plugin
 		private const string EmptyUsername = "(none)";
 		private const string EmptyPassword = "X";
 
-		public static PwEntry GetKeepassEntry(Crypto crypto, PassEntry entry, MemoryProtectionConfig protect)
+		public static PwEntry GetKeepassEntry(PassEntry entry, GetPassword getPassword, MemoryProtectionConfig protect)
 		{
 			var result = new PwEntry(true, true);
 			var resultidx = new PwEntryIndexer(result, protect);
 
-			var pw = Password.GetPassword(crypto, entry);
+			var pw = getPassword(entry);
 
 			if (!pw.Equals(EmptyPassword))
 				resultidx[PwDefs.PasswordField] = pw;
@@ -51,7 +51,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			return result;
 		}
 
-		public static PassEntry GetPfpEntry(Crypto crypto, PwEntry pwEntry)
+		public static PassEntry GetPfpEntry(PwEntry pwEntry)
 		{
 			var result = new StoredEntry();
 			var fields = new SortedDictionary<string, string> {
@@ -70,7 +70,6 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			result.notes += ParseNotes(fields[PwDefs.NotesField], fields)
 				.Replace("\r\n", "\n").Replace("\r", "\n");
 
-			result.type = "stored";
 			result.site = fields[PwDefs.UrlField];
 			result.name = fields[PwDefs.UserNameField];
 			result.password = fields[PwDefs.PasswordField];
@@ -89,7 +88,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			}
 
 			result.site = GetSitePart(result.site);
-			result.notes = result.notes.Replace("%fields%", "").Trim();
+			result.notes = result.notes.Replace("%fields%", "\n").Trim();
 
 			if (result.notes.Equals(""))
 				result.notes = null;
@@ -97,7 +96,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			return result;
 		}
 
-		public static string ParseNotes(string str, IDictionary<string, string> dict)
+		private static string ParseNotes(string str, IDictionary<string, string> dict)
 		{
 			var parsing = true;
 			var reader = new StringReader(str);
@@ -121,7 +120,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			return result;
 		}
 
-		public static string GetSitePart(string url)
+		private static string GetSitePart(string url)
 		{
 			var result = url;
 

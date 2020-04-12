@@ -1,8 +1,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeepassPfpConverter", "src\KeepassPfpConverter.csproj", "{A5E17545-754C-44BA-B2AF-1560FF894558}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "app", "src\app.csproj", "{A5E17545-754C-44BA-B2AF-1560FF894558}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeepassPfpConverter.Test", "test\KeepassPfpConverter.Test.csproj", "{CBFB22BB-D666-4A4D-AE83-05884C6176A6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test", "test\test.csproj", "{CBFB22BB-D666-4A4D-AE83-05884C6176A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

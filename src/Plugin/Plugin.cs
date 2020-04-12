@@ -5,14 +5,13 @@ namespace PfpConverter
 {
 	public class PfpConverterExt : Plugin
 	{
+		public override string UpdateUrl => "https://raw.githack.com/adrium/KeepassPfpConverter/master/update.txt";
+
 		public override bool Initialize(IPluginHost host)
 		{
-			host.FileFormatPool.Add(new PfpFormatProvider());
+			host.FileFormatPool.Add(new FormatProvider());
 			return true;
 		}
 
-		public override string UpdateUrl {
-			get { return "https://raw.githack.com/adrium/KeepassPfpConverter/master/src/version.txt"; }
-		}
 	}
 }

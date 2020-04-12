@@ -11,8 +11,8 @@ if [ ! -f KeepassPfpConverter.sln ]; then
 fi
 
 msbuild /p:Configuration=Plugin
-mono "$ILSPYCONVERT" 2 bin/Plugin/KeepassPfpConverter.dll > bin/Plugin/PfpConverter.cs
-rm bin/Plugin/KeepassPfpConverter.dll
+mono "$ILSPYCONVERT" 2 bin/Plugin/PfpConverter.dll > bin/Plugin/PfpConverter.cs
+rm bin/Plugin/PfpConverter.dll
 rm bin/Plugin/KeePass.exe
 
 mono packages/KeePass.exe -plgx-create "$PWD/bin/Plugin"

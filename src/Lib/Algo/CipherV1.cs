@@ -1,146 +1,48 @@
-﻿using Org.BouncyCastle.Crypto.Digests;
+﻿using System;
+using System.Text;
 using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Macs;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
-using System;
-using System.Security.Cryptography;
-using System.Text;
 
-namespace Adrium.KeepassPfpConverter
+namespace Adrium.KeepassPfpConverter.Algo
 {
-	public class Crypto
+	public class CipherV1
 	{
-		private const int N = 32768;
-		private const int r = 8;
-		private const int p = 1;
-
 		private const int AES_KEY_SIZE = 256;
 		private const int TAG_LENTH = 128;
 
-		private const int IV_LENGTH = 12;
-		private const int HMAC_LENGTH = 32;
-		private const int SALT_LENGTH = 16;
+		private readonly byte[] keyBytes;
 
-		private byte[] hmacBytes;
-		private byte[] passBytes;
-		private byte[] saltBytes;
-		private byte[] keyBytes;
-
-		public static string GenerateRandom(int length)
+		public CipherV1(Hash hash, string salt)
 		{
-			var rng = RandomNumberGenerator.Create();
-			var gen = new byte[length];
-			rng.GetBytes(gen);
-
-			var result = Convert.ToBase64String(gen);
-			return result;
-		}
-
-		public void SetMasterPassword(string masterPassword)
-		{
-			passBytes = Encoding.UTF8.GetBytes(masterPassword);
-			keyBytes = null;
-		}
-
-		public void SetSalt(string salt)
-		{
-			saltBytes = Convert.FromBase64String(salt);
-			var key = Hash(GetArrayAsString(saltBytes), AES_KEY_SIZE / 8);
+			var saltBytes = Convert.FromBase64String(salt);
+			var key = hash(GetArrayAsString(saltBytes), AES_KEY_SIZE / 8);
 			keyBytes = Convert.FromBase64String(key);
 		}
 
-		public void SetHmacSecret(string hmac)
+		public string Process(bool encrypt, string ivstr, string datastr)
 		{
-			hmacBytes = Convert.FromBase64String(hmac);
+			return encrypt ? Encrypt(ivstr, datastr) : Decrypt(ivstr, datastr);
 		}
 
-		public string GetSalt()
-		{
-			var result = saltBytes == null ? null : Convert.ToBase64String(saltBytes);
-			return result;
-		}
-
-		public string GetHmacSecret()
-		{
-			var result = hmacBytes == null ? null : Convert.ToBase64String(hmacBytes);
-			return result;
-		}
-
-		public void GenerateSalt()
-		{
-			SetSalt(GenerateRandom(SALT_LENGTH));
-		}
-
-		public void GenerateHmacSecret()
-		{
-			SetHmacSecret(GenerateRandom(HMAC_LENGTH));
-		}
-
-		public string Decrypt(string data)
-		{
-			var dataarray = data.Split('_');
-
-			if (dataarray.Length < 2)
-				throw new InvalidOperationException("IV needed");
-
-			var iv = Convert.FromBase64String(dataarray[0]);
-			var input = Convert.FromBase64String(dataarray[1]);
-
-			var result = Encoding.UTF8.GetString(Process(false, iv, input));
-
-			return result;
-		}
-
-		public string Encrypt(string data)
-		{
-			return Encrypt(data, GenerateRandom(IV_LENGTH));
-		}
-
-		public string Encrypt(string data, string ivstr)
+		private string Decrypt(string ivstr, string datastr)
 		{
 			var iv = Convert.FromBase64String(ivstr);
-			var input = Encoding.UTF8.GetBytes(data);
-
-			var enc = Convert.ToBase64String(Process(true, iv, input));
-			var result = ivstr + "_" + enc;
-
+			var data = Convert.FromBase64String(datastr);
+			var result = Encoding.UTF8.GetString(Process(false, iv, data));
 			return result;
 		}
 
-		public string Hash(string salt, int length)
+		private string Encrypt(string ivstr, string datastr)
 		{
-			ValidatePass();
-			var S = Encoding.UTF8.GetBytes(salt);
-			var hash = SCrypt.Generate(passBytes, S, N, r, p, length);
-			var result = Convert.ToBase64String(hash);
-			return result;
-		}
-
-		public string Digest(string data)
-		{
-			ValidateHmac();
-
-			var bytes = Encoding.UTF8.GetBytes(data);
-
-			var hmac = new HMac(new Sha256Digest());
-
-			hmac.Init(new KeyParameter(hmacBytes));
-			var digest = new byte[hmac.GetMacSize()];
-
-			hmac.BlockUpdate(bytes, 0, bytes.Length);
-			hmac.DoFinal(digest, 0);
-
-			var result = Convert.ToBase64String(digest);
-
+			var iv = Convert.FromBase64String(ivstr);
+			var data = Encoding.UTF8.GetBytes(datastr);
+			var result = Convert.ToBase64String(Process(true, iv, data));
 			return result;
 		}
 
 		private byte[] Process(bool encrypt, byte[] iv, byte[] input)
 		{
-			ValidateKey();
-
 			var cipher = new GcmBlockCipher(new AesEngine());
 			var parameters = new AeadParameters(new KeyParameter(keyBytes), TAG_LENTH, iv);
 
@@ -153,34 +55,15 @@ namespace Adrium.KeepassPfpConverter
 			return result;
 		}
 
-		private static string GetArrayAsString(byte[] input)
+		private string GetArrayAsString(byte[] input)
 		{
 			var chars = new char[input.Length];
 
-			for (var i = 0; i < input.Length; i++) {
+			for (var i = 0; i < input.Length; i++)
 				chars[i] = Convert.ToChar(input[i]);
-			}
 
 			var result = new string(chars);
 			return result;
-		}
-
-		private void ValidateHmac()
-		{
-			if (hmacBytes == null)
-				throw new InvalidOperationException("HMAC needed");
-		}
-
-		private void ValidatePass()
-		{
-			if (passBytes == null)
-				throw new InvalidOperationException("Password needed");
-		}
-
-		private void ValidateKey()
-		{
-			if (keyBytes == null)
-				throw new InvalidOperationException("Key needed");
 		}
 	}
 }

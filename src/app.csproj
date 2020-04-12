@@ -6,7 +6,7 @@
     <ProjectGuid>{A5E17545-754C-44BA-B2AF-1560FF894558}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>Adrium.KeepassPfpConverter</RootNamespace>
-    <AssemblyName>KeepassPfpConverter</AssemblyName>
+    <AssemblyName>PfpConverter</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -38,7 +38,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="BouncyCastle.Crypto">
-      <HintPath>..\packages\BouncyCastle.1.8.5\lib\BouncyCastle.Crypto.dll</HintPath>
+      <HintPath>..\packages\BouncyCastle.1.8.6.1\lib\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
     <Reference Include="KeePass">
       <HintPath>..\packages\KeePass.exe</HintPath>
@@ -46,19 +46,19 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Drawing" />
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net20\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net20\Newtonsoft.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Adrium.KeepassPfpConverter\*.cs" />
-    <Compile Include="Adrium.KeepassPfpConverter\Objects\*.cs" />
-    <Compile Include="Adrium.KeepassPfpConverter\Plugin\*.cs" Condition=" '$(Configuration)' == 'Plugin' " />
-    <Compile Include="Adrium.KeepassPfpConverter\Program\*.cs" Condition=" '$(Configuration)' != 'Plugin' " />
+    <Compile Include="Lib\*.cs" />
+    <Compile Include="Lib\Algo\*.cs" />
+    <Compile Include="Lib\Objects\*.cs" />
+    <Compile Include="Plugin\*.cs" Condition=" '$(Configuration)' == 'Plugin' " />
+    <Compile Include="Program\*.cs" Condition=" '$(Configuration)' != 'Plugin' " />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="version.txt" />
     <None Include="app.config" Condition=" '$(Configuration)' != 'Plugin' " />
     <None Include="PfpConverter.plgx.csproj" Condition=" '$(Configuration)' == 'Plugin' ">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

@@ -9,124 +9,70 @@ namespace Adrium.KeepassPfpConverter.Test
 	public class PluginUtilTest
 	{
 		[Test]
-		public void TestGetKeepassEntryStored()
+		public void TestGetKeepassEntrySimple()
 		{
-			var crypto = new Crypto();
-			var expected = Data.StoredEntry;
-			var protect = new MemoryProtectionConfig();
-			var result = Util.GetKeepassEntry(crypto, expected, protect);
-			var resultidx = new PwEntryIndexer(result, null);
+			var entry = GetPfpEntryObject();
 
-			Assert.AreEqual(expected.site, resultidx[PwDefs.UrlField]);
-			Assert.AreEqual(expected.name, resultidx[PwDefs.UserNameField]);
-			Assert.AreEqual(expected.password, resultidx[PwDefs.PasswordField]);
-			Assert.IsTrue(result.Strings.Get(PwDefs.PasswordField).IsProtected);
+			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new MemoryProtectionConfig()));
+
+			StringAssert.Contains(entry.site, resultidx[PwDefs.TitleField]);
+			Assert.AreEqual(entry.site, resultidx[PwDefs.UrlField]);
+			Assert.AreEqual(entry.name, resultidx[PwDefs.UserNameField]);
+			Assert.AreEqual(entry.password, resultidx[PwDefs.PasswordField]);
+			Assert.IsTrue(resultidx.entry.Strings.Get(PwDefs.PasswordField).IsProtected);
 		}
 
 		[Test]
-		public void TestGetKeepassEntryGenerated2()
+		public void TestGetPfpEntrySimple()
 		{
-			var crypto = new Crypto();
-			crypto.SetMasterPassword("password");
+			var entry = GetKeepassEntryObject();
 
-			var expected = Data.Generated2Entry;
-			var protect = new MemoryProtectionConfig();
-			var result = Util.GetKeepassEntry(crypto, expected, protect);
-			var resultidx = new PwEntryIndexer(result, null);
+			var result = Util.GetPfpEntry(entry.entry) as StoredEntry;
 
-			Assert.AreEqual(expected.site, resultidx[PwDefs.UrlField]);
-			Assert.AreEqual(expected.name, resultidx[PwDefs.UserNameField]);
-			Assert.AreEqual(Data.Generated2Password, resultidx[PwDefs.PasswordField]);
-			Assert.IsTrue(result.Strings.Get(PwDefs.PasswordField).IsProtected);
+			Assert.AreEqual(entry[PwDefs.UrlField], result.site);
+			Assert.AreEqual(entry[PwDefs.UserNameField], result.name);
+			Assert.AreEqual(entry[PwDefs.PasswordField], result.password);
+			Assert.AreEqual("", result.revision);
 		}
 
-		[Test]
-		public void TestGetPfpEntryStored()
+		// TODO null and ""
+		[TestCase(PwDefs.UrlField, "pfp.invalid")]
+		[TestCase(PwDefs.UserNameField, "(none)")]
+		[TestCase(PwDefs.PasswordField, "X")]
+		public void TestGetKeepassEntryEmptyFields(string field, string value)
 		{
-			var expected = Data.StoredEntry;
-			var entry = new PwEntry(true, true);
-			var entryidx = new PwEntryIndexer(entry, new MemoryProtectionConfig()) {
-				[PwDefs.UserNameField] = expected.name,
-				[PwDefs.PasswordField] = expected.password,
-				[PwDefs.UrlField] = $"https://www.{expected.site}/login?secure=yes"
-			};
+			var entry = GetPfpEntryObject();
+			if (field == PwDefs.UrlField) entry.site = value;
+			if (field == PwDefs.UserNameField) entry.name = value;
+			if (field == PwDefs.PasswordField) entry.password = value;
 
-			var result = Util.GetPfpEntry(new Crypto(), entry) as StoredEntry;
+			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new MemoryProtectionConfig()));
 
-			Assert.AreEqual(expected.site, result.site);
-			Assert.AreEqual(expected.name, result.name);
-			Assert.AreEqual(expected.password, result.password);
+			Assert.IsNull(resultidx[field]);
 		}
 
-		[Test]
-		public void TestGetKeepassNotesNone()
+		// TODO [TestCase(null, null, null, null, null, null)]
+		[TestCase("", null, null, null, null, null)]
+		[TestCase("", "Notes", null, "Notes", null, null)]
+		[TestCase("rev", "Notes", "rev", "Notes", null, null)]
+		[TestCase("", "Test: OK", null, null, "OK", null)]
+		[TestCase("", "Test: Foo: Bar", null, null, "Foo: Bar", null)]
+		[TestCase("", "Test: OK\nNotes", null, "Notes", "OK", null)]
+		[TestCase("", "Test: OK\nFoo: Bar\nNotes", null, "Notes", "OK", "Bar")]
+		[TestCase("rev", "Test: OK\nFoo: Bar\nNotes", "rev", "Notes", "OK", "Bar")]
+		// TODO [TestCase("new", "Revision: old", "new", null, null, null)]
+		public void TestGetKeepassEntryExtraFields(string revin, string notein, string revexp, string noteexp, string testexp, string fooexp)
 		{
-			var expected = Data.StoredEntry;
-			expected.revision = "";
-			expected.notes = null;
+			var entry = GetPfpEntryObject();
+			entry.revision = revin;
+			entry.notes = notein;
 
-			var result = Util.GetKeepassEntry(new Crypto(), expected, new MemoryProtectionConfig());
+			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new MemoryProtectionConfig()));
 
-			Assert.IsFalse(result.Strings.Exists(Util.RevisionField));
-			Assert.IsFalse(result.Strings.Exists(PwDefs.NotesField));
-		}
-
-		[Test]
-		public void TestGetKeepassNotesString()
-		{
-			var expected = Data.StoredEntry;
-			expected.revision = "";
-			expected.notes = "message";
-
-			var result = Util.GetKeepassEntry(new Crypto(), expected, new MemoryProtectionConfig());
-			var resultidx = new PwEntryIndexer(result, null);
-
-			Assert.AreEqual(null, resultidx[Util.RevisionField]);
-			Assert.AreEqual("message", resultidx[PwDefs.NotesField]);
-		}
-
-		[Test]
-		public void TestGetKeepassNotesRevision()
-		{
-			var expected = Data.StoredEntry;
-			expected.revision = "test";
-			expected.notes = null;
-
-			var result = Util.GetKeepassEntry(new Crypto(), expected, new MemoryProtectionConfig());
-			var resultidx = new PwEntryIndexer(result, null);
-
-			Assert.AreEqual("test", resultidx[Util.RevisionField]);
-			Assert.AreEqual(null, resultidx[PwDefs.NotesField]);
-		}
-
-		[Test]
-		public void TestGetKeepassNotesMixed()
-		{
-			var expected = Data.StoredEntry;
-			expected.revision = "test";
-			expected.notes = "message";
-
-			var result = Util.GetKeepassEntry(new Crypto(), expected, new MemoryProtectionConfig());
-			var resultidx = new PwEntryIndexer(result, null);
-
-			Assert.AreEqual("test", resultidx[Util.RevisionField]);
-			Assert.AreEqual("message", resultidx[PwDefs.NotesField]);
-		}
-
-		[Test]
-		public void TestGetKeepassNotesFields()
-		{
-			var expected = Data.StoredEntry;
-			expected.revision = "test";
-			expected.notes = "Foo: Bar: Baz\r\nTest: OK\nmessage\n";
-
-			var result = Util.GetKeepassEntry(new Crypto(), expected, new MemoryProtectionConfig());
-			var resultidx = new PwEntryIndexer(result, null);
-
-			Assert.AreEqual("test", resultidx[Util.RevisionField]);
-			Assert.AreEqual("message", resultidx[PwDefs.NotesField]);
-			Assert.AreEqual("Bar: Baz", resultidx["Foo"]);
-			Assert.AreEqual("OK", resultidx["Test"]);
+			Assert.AreEqual(revexp, resultidx[Util.RevisionField]);
+			Assert.AreEqual(noteexp, resultidx[PwDefs.NotesField]);
+			Assert.AreEqual(testexp, resultidx["Test"]);
+			Assert.AreEqual(fooexp, resultidx["Foo"]);
 		}
 
 		[Test]
@@ -134,70 +80,77 @@ namespace Adrium.KeepassPfpConverter.Test
 		{
 			var entry = new PwEntry(true, true);
 
-			var result = Util.GetPfpEntry(new Crypto(), entry);
+			var result = Util.GetPfpEntry(entry) as StoredEntry;
 
 			Assert.AreEqual("pfp.invalid", result.site);
+			Assert.AreEqual("(none)", result.name);
+			Assert.AreEqual("X", result.password);
 			Assert.AreEqual("", result.revision);
 			Assert.AreEqual(null, result.notes);
 		}
 
-		[Test]
-		public void TestGetPfpNotesString()
+		[TestCase("example.com", ExpectedResult = "example.com")]
+		[TestCase("http://example.com/test", ExpectedResult = "example.com")]
+		[TestCase("https://example.com/test", ExpectedResult = "example.com")]
+		[TestCase("https://www.example.com/test", ExpectedResult = "example.com")]
+		[TestCase("https://host.example.com/test", ExpectedResult = "host.example.com")]
+		[TestCase("https://www.host.example.com/test", ExpectedResult = "host.example.com")]
+		[TestCase("https://sub.host.example.com/test", ExpectedResult = "sub.host.example.com")]
+		// TODO [TestCase("ftp://example.com/test", ExpectedResult = "example.com")]
+		public string TestGetPfpEntryUrlField(string value)
 		{
-			var entry = new PwEntry(true, true);
-			var entryidx = new PwEntryIndexer(entry, new MemoryProtectionConfig()) {
-				[PwDefs.NotesField] = "message"
-			};
+			var entry = GetKeepassEntryObject();
+			entry[PwDefs.UrlField] = value;
 
-			var result = Util.GetPfpEntry(new Crypto(), entry);
+			var result = Util.GetPfpEntry(entry.entry);
 
-			Assert.AreEqual("", result.revision);
-			Assert.AreEqual("message", result.notes);
+			return result.site;
 		}
 
-		[Test]
-		public void TestGetPfpNotesRevision()
+		[TestCase(null, null, null, null, "", null)]
+		[TestCase(null, null, "OK", null, "", "Test: OK")]
+		[TestCase(null, null, "OK", "Bar", "", "Foo: Bar\nTest: OK")]
+		[TestCase(null, "Notes\r\nNewline", "OK", "Bar", "", "Foo: Bar\nTest: OK\n\nNotes\nNewline")]
+		[TestCase(null, "Hello: World\r\nNotes\r\nNewline", "OK", "Bar", "", "Foo: Bar\nHello: World\nTest: OK\n\nNotes\nNewline")]
+		[TestCase(null, "Notes\r\nHello: World\r\nNewline", "OK", "Bar", "", "Foo: Bar\nTest: OK\n\nNotes\nHello: World\nNewline")]
+		[TestCase("rev", "Notes", "OK", null, "rev", "Test: OK\n\nNotes")]
+		// TODO [TestCase("new", "Revision: old\nNotes", "OK", null, "new", "Test: OK\n\nNotes")]
+		public void TestGetPfpEntryNotesField(string revin, string notein, string testin, string fooin, string revexp, string noteexp)
 		{
-			var entry = new PwEntry(true, true);
-			var entryidx = new PwEntryIndexer(entry, new MemoryProtectionConfig()) {
-				[Util.RevisionField] = "test"
-			};
+			var entry = GetKeepassEntryObject();
+			if (revin != null) entry[Util.RevisionField] = revin;
+			if (notein != null) entry[PwDefs.NotesField] = notein;
+			if (testin != null) entry["Test"] = testin;
+			if (fooin != null) entry["Foo"] = fooin;
 
-			var result = Util.GetPfpEntry(new Crypto(), entry);
+			var result = Util.GetPfpEntry(entry.entry);
 
-			Assert.AreEqual("test", result.revision);
-			Assert.AreEqual(null, result.notes);
+			Assert.AreEqual(revexp, result.revision);
+			Assert.AreEqual(noteexp, result.notes);
 		}
 
-		[Test]
-		public void TestGetPfpNotesMixed()
+		private StoredEntry GetPfpEntryObject()
 		{
-			var entry = new PwEntry(true, true);
-			var entryidx = new PwEntryIndexer(entry, new MemoryProtectionConfig()) {
-				[PwDefs.NotesField] = "Revision: test\r\nmessage"
+			return new StoredEntry {
+				site = "example.com",
+				name = "user",
+				password = "secret",
+				revision = ""
 			};
-
-			var result = Util.GetPfpEntry(new Crypto(), entry);
-
-			Assert.AreEqual("test", result.revision);
-			Assert.AreEqual("message", result.notes);
 		}
 
-		[Test]
-		public void TestGetPfpNotesFields()
+		private PwEntryIndexer GetKeepassEntryObject()
 		{
-			var entry = new PwEntry(true, true);
-			var entryidx = new PwEntryIndexer(entry, new MemoryProtectionConfig()) {
-				[Util.RevisionField] = "test",
-				[PwDefs.NotesField] = "Security: High\r\nmessage\r\n",
-				["Test"] = "OK",
-				["Foo"] = "Bar\r\nBaz"
+			return new PwEntryIndexer(new PwEntry(true, true)) {
+				[PwDefs.UrlField] = "example.com",
+				[PwDefs.UserNameField] = "user",
+				[PwDefs.PasswordField] = "secret",
 			};
+		}
 
-			var result = Util.GetPfpEntry(new Crypto(), entry);
-
-			Assert.AreEqual("test", result.revision);
-			Assert.AreEqual("Foo: Bar Baz\nSecurity: High\nTest: OK\nmessage", result.notes);
+		private GetPassword Fn()
+		{
+			return entry => (entry as StoredEntry).password;
 		}
 	}
 }

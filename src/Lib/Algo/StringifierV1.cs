@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using Adrium.KeepassPfpConverter.Objects;
 
-namespace Adrium.KeepassPfpConverter
+namespace Adrium.KeepassPfpConverter.Algo
 {
-	public static class Password
+	public class StringifierV1
 	{
-		private const string GENERATED_TYPE_2 = "generated2";
-
 		private const string LOWERCASE = "abcdefghjkmnpqrstuvwxyz";
 		private const string UPPERCASE = "ABCDEFGHJKMNPQRSTUVWXYZ";
 		private const string NUMBER = "23456789";
 		private const string SYMBOL = "!#$%&()*+,-./:;<=>?@[]^_{|}~";
 
-		public static string ToPassword(string bytes, bool lower, bool upper, bool number, bool symbol)
+		public string Stringify(string bytes, bool lower, bool upper, bool number, bool symbol)
 		{
 			var array = Convert.FromBase64String(bytes);
 			var charsets = new List<string>();
@@ -58,32 +55,6 @@ namespace Adrium.KeepassPfpConverter
 				}
 			}
 			return new string(result);
-		}
-
-		public static string GetPassword(Crypto crypto, PassEntry entry)
-		{
-			var result = "⚠ Unsupported password type";
-
-			if (entry is StoredEntry stored)
-				result = stored.password;
-
-			if (entry is GeneratedEntry generated)
-				if (entry.type.Equals(GENERATED_TYPE_2))
-					result = GeneratePassword2(crypto, generated);
-
-			return result;
-		}
-
-		public static string GeneratePassword2(Crypto crypto, GeneratedEntry entry)
-		{
-			var salt = entry.site + "\0" + entry.name;
-			if (!string.IsNullOrEmpty(entry.revision))
-				salt += "\0" + entry.revision;
-
-			var hash = crypto.Hash(salt, entry.length);
-			var result = ToPassword(hash, entry.lower, entry.upper, entry.number, entry.symbol);
-
-			return result;
 		}
 	}
 }

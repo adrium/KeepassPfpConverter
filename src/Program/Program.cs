@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Windows.Forms;
 using Adrium.KeepassPfpConverter.Objects;
 using Newtonsoft.Json;
 
@@ -27,50 +26,38 @@ namespace Adrium.KeepassPfpConverter
 			Array.Copy(args, 1, cmdargs, 0, cmdargs.Length);
 
 			if (cmdargs.Length < command.Args) {
-				PrintHelp(command);
+				PrintHelp(commands);
 				return;
 			}
 
-			command.Cmd(cmdargs);
-		}
-
-		private static void DecryptCommand(string[] args)
-		{
 			try {
-				DecryptCommandImpl(args);
-			} catch (PfpConvert.ReaderException e) {
+				command.Cmd(cmdargs);
+			} catch (Exception e) {
 				Console.WriteLine(e.Message);
 			}
 		}
 
 		private static void EncryptCommand(string[] args)
 		{
+			var json = new JsonConvert();
+			var pfp = new PfpConvert();
+
 			using (var input = new StreamReader(args[0]))
 			using (var output = File.OpenWrite(args[2])) {
-				var crypto = new Crypto();
-				crypto.SetMasterPassword(args[1]);
-
-				var entries = PfpConvert.DeserializeObjectContainingEntries<BaseEntry[]>(input.ReadToEnd());
-				PfpConvert.Save(crypto, output, entries);
+				var entries = json.Deserialize<BaseEntry[]>(input.ReadToEnd());
+				pfp.Save(output, args[1], entries);
 			}
 		}
 
-		private static void DecryptCommandImpl(string[] args)
+		private static void DecryptCommand(string[] args)
 		{
-			var jsonsettings = new JsonSerializerSettings {
-				Formatting = Formatting.Indented,
-				NullValueHandling = NullValueHandling.Ignore,
-			};
+			var json = new JsonConvert(new JsonSerializerSettings { Formatting = Formatting.Indented });
+			var pfp = new PfpConvert();
 
 			using (var input = File.OpenRead(args[0]))
-			using (var output = new StreamWriter(args[2]))
-			{
-				var crypto = new Crypto();
-				crypto.SetMasterPassword(args[1]);
-
-				var entries = PfpConvert.Load(crypto, input);
-				var outputjson = JsonConvert.SerializeObject(entries, jsonsettings);
-				output.WriteLine(outputjson);
+			using (var output = new StreamWriter(args[2])) {
+				var entries = pfp.Load(input, args[1]);
+				output.WriteLine(json.Serialize(entries));
 			}
 		}
 
@@ -82,17 +69,10 @@ namespace Adrium.KeepassPfpConverter
 				Console.WriteLine("{0} {1} {2}", exe, command.Name, command.Usage);
 		}
 
-		private static void PrintHelp(Command command)
-		{
-			var exe = GetExe();
-			Console.WriteLine("USAGE:");
-			Console.WriteLine("{0} {1} {2}", exe, command.Name, command.Usage);
-		}
-
 		private static string GetExe()
 		{
 			var path = System.Reflection.MethodBase.GetCurrentMethod().DeclaringType.Assembly.Location;
-			var result = System.IO.Path.GetFileName(path);
+			var result = Path.GetFileName(path);
 			return result;
 		}
 

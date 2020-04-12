@@ -13,75 +13,54 @@ namespace Adrium.KeepassPfpConverter.Test
 		public void TestLoad()
 		{
 			var file = Data.Json;
-			var crypto = new Crypto();
-			crypto.SetMasterPassword("password");
+			var pfp = new PfpConvert();
+			var entries = pfp.Load(Data.Json, "password");
 
-			var result = PfpConvert.Load(crypto, file);
-			AssertEntries(result);
+			Assert.AreEqual("example.com", (entries[0] as SiteEntry).site);
+			Assert.AreEqual("user", (entries[1] as GeneratedEntry).name);
+			Assert.AreEqual(16, (entries[1] as GeneratedEntry).length);
 		}
 
 		[Test]
 		public void TestSave()
 		{
-			var crypto = new Crypto();
-			crypto.SetMasterPassword("password");
-
-			var entry1 = Data.SiteEntry;
-			var entry2 = Data.AliasEntry;
-			var entry3 = Data.StoredEntry;
-			var entry4 = Data.Generated2Entry;
-
-			var list = new List<BaseEntry> { entry1, entry2, entry3, entry4 };
 			var stream = new MemoryStream();
+			var pfp = new PfpConvert();
+			var list = new List<BaseEntry> {
+				new StoredEntry { site = "example.com", name = "user", password = "secret" },
+			};
 
-			PfpConvert.Save(crypto, stream, list);
+			pfp.Save(stream, "password", list);
+
 			stream.Position = 0;
+			var entries = pfp.Load(stream, "password");
 
-			var result = PfpConvert.Load(crypto, stream);
-			AssertEntries(result);
+			Assert.AreEqual("example.com", (entries[0] as SiteEntry).site);
+			Assert.AreEqual("user", (entries[1] as StoredEntry).name);
+			Assert.AreEqual("secret", (entries[1] as StoredEntry).password);
+		}
+
+		[TestCase("secret", ExpectedResult = "secret")]
+		public string TestGetPasswordStored(string password)
+		{
+			return Fn("password")(new StoredEntry { password = password });
+		}
+
+		[TestCase(ExpectedResult = "xqzrttvppgfmghyz")]
+		public string TestGetPasswordGenerated2()
+		{
+			return Fn("password")(new GeneratedEntry { site = "example.com", name = "user", length = 16, lower = true });
 		}
 
 		[Test]
-		public void TestDeserializeObjectContainingEntries()
+		public void TestGetPasswordException()
 		{
-			var json = "{'site':'example.com'}".Replace("'", "\"");
-			var result = PfpConvert.DeserializeObjectContainingEntries<BaseEntry>(json) as SiteEntry;
-			Assert.AreEqual("example.com", result.site);
+			Assert.Throws<System.ArgumentException>(() => Fn("")(new GeneratedEntry { type = "unknown" }));
 		}
 
-		[Test]
-		public void TestGenerateSiteEntries()
+		private GetPassword Fn(string password)
 		{
-			var entry1 = Data.StoredEntry;
-			var entry2 = Data.Generated2Entry;
-
-			var list = new List<BaseEntry> { entry1, entry2 };
-
-			var result = PfpConvert.GenerateSiteEntries(list);
-
-			Assert.AreSame(entry1, result.First(x => x is StoredEntry));
-			Assert.AreSame(entry2, result.First(x => x is GeneratedEntry));
-
-			var entry3 = result.First(x => x is SiteEntry) as SiteEntry;
-		}
-
-		private void AssertEntries(IList<BaseEntry> list)
-		{
-			var expected1 = Data.SiteEntry;
-			var entry1 = list.First(x => x is SiteEntry e && e.alias == null) as SiteEntry;
-			Assert.AreEqual(expected1.ToDict(), entry1.ToDict());
-
-			var expected2 = Data.AliasEntry;
-			var entry2 = list.First(x => x is SiteEntry e && e.alias != null) as SiteEntry;
-			Assert.AreEqual(expected2.ToDict(), entry2.ToDict());
-
-			var expected3 = Data.StoredEntry;
-			var entry3 = list.First(x => x is StoredEntry) as StoredEntry;
-			Assert.AreEqual(expected3.ToDict(), entry3.ToDict());
-
-			var expected4 = Data.Generated2Entry;
-			var entry4 = list.First(x => x is GeneratedEntry) as GeneratedEntry;
-			Assert.AreEqual(expected4.ToDict(), entry4.ToDict());
+			return new PfpConvert().GetPasswordGetter(password);
 		}
 	}
 }

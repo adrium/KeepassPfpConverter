@@ -8,8 +8,8 @@ fi
 msbuild /p:Configuration=Release
 rm bin/Release/KeePass.exe
 
-mv bin/Release KeepassPfpConverter
+mv bin/Release PfpConverter
 
-rm KeepassPfpConverter.zip
-zip -Dr KeepassPfpConverter.zip KeepassPfpConverter
-rm -r KeepassPfpConverter
+rm PfpConverter.zip
+zip -Dr PfpConverter.zip PfpConverter
+rm -r PfpConverter
