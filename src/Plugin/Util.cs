@@ -16,8 +16,12 @@ namespace Adrium.KeepassPfpConverter.Plugin
 
 		public static PwEntry GetKeepassEntry(PassEntry entry, GetPassword getPassword, ICollection<string> protect)
 		{
-			var result = new PwEntry(true, true);
-			var resultidx = new PwEntryIndexer(result, protect);
+			var resultidx = new PwEntryIndexer(new PwEntry(true, true), protect);
+			var fields = new Dictionary<string, string>();
+			var notes = ParseNotes(entry.notes ?? "", fields);
+
+			foreach (var field in fields)
+				resultidx[field.Key] = field.Value;
 
 			var pw = getPassword(entry);
 
@@ -37,22 +41,17 @@ namespace Adrium.KeepassPfpConverter.Plugin
 				resultidx[PwDefs.UrlField] = entry.site;
 			}
 
-			var fields = new Dictionary<string, string>();
-			var notes = ParseNotes(entry.notes ?? "", fields);
-
 			notes = notes.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n").Trim();
 
 			if (!notes.Equals(""))
 				resultidx[PwDefs.NotesField] = notes;
 
-			foreach (var field in fields)
-				resultidx[field.Key] = field.Value;
-
-			return result;
+			return resultidx.entry;
 		}
 
 		public static PassEntry GetPfpEntry(PwEntry pwEntry)
 		{
+			var entry = new PwEntryIndexer(pwEntry);
 			var result = new StoredEntry();
 			var fields = new SortedDictionary<string, string> {
 				{ PwDefs.UserNameField, EmptyUsername },
@@ -62,13 +61,13 @@ namespace Adrium.KeepassPfpConverter.Plugin
 				{ RevisionField, "" }
 			};
 
-			foreach (var field in pwEntry.Strings)
-				if (!field.Value.ReadString().Equals(""))
-					fields[field.Key] = field.Value.ReadString();
-
 			result.notes = "%fields%";
-			result.notes += ParseNotes(fields[PwDefs.NotesField], fields)
+			result.notes += ParseNotes(entry[PwDefs.NotesField] ?? "", fields)
 				.Replace("\r\n", "\n").Replace("\r", "\n");
+
+			foreach (var field in pwEntry.Strings)
+				if (!entry[field.Key].Equals(""))
+					fields[field.Key] = entry[field.Key];
 
 			result.site = fields[PwDefs.UrlField];
 			result.name = fields[PwDefs.UserNameField];

@@ -61,7 +61,7 @@ namespace Adrium.KeepassPfpConverter.Test
 		[TestCase("", "Test: OK\nNotes", null, "Notes", "OK", null)]
 		[TestCase("", "Test: OK\nFoo: Bar\nNotes", null, "Notes", "OK", "Bar")]
 		[TestCase("rev", "Test: OK\nFoo: Bar\nNotes", "rev", "Notes", "OK", "Bar")]
-		// TODO [TestCase("new", "Revision: old", "new", null, null, null)]
+		[TestCase("new", "Revision: old", "new", null, null, null)]
 		public void TestGetKeepassEntryExtraFields(string revin, string notein, string revexp, string noteexp, string testexp, string fooexp)
 		{
 			var entry = GetPfpEntryObject();
@@ -115,7 +115,8 @@ namespace Adrium.KeepassPfpConverter.Test
 		[TestCase(null, "Hello: World\r\nNotes\r\nNewline", "OK", "Bar", "", "Foo: Bar\nHello: World\nTest: OK\n\nNotes\nNewline")]
 		[TestCase(null, "Notes\r\nHello: World\r\nNewline", "OK", "Bar", "", "Foo: Bar\nTest: OK\n\nNotes\nHello: World\nNewline")]
 		[TestCase("rev", "Notes", "OK", null, "rev", "Test: OK\n\nNotes")]
-		// TODO [TestCase("new", "Revision: old\nNotes", "OK", null, "new", "Test: OK\n\nNotes")]
+		[TestCase("rev", "Test: Conflict\nNotes", "OK", null, "rev", "Test: OK\n\nNotes")]
+		[TestCase("new", "Revision: old\nNotes", "OK", null, "new", "Test: OK\n\nNotes")]
 		public void TestGetPfpEntryNotesField(string revin, string notein, string testin, string fooin, string revexp, string noteexp)
 		{
 			var entry = GetKeepassEntryObject();
