@@ -1,4 +1,5 @@
-﻿using Adrium.KeepassPfpConverter.Objects;
+﻿using System.Collections.Generic;
+using Adrium.KeepassPfpConverter.Objects;
 using Adrium.KeepassPfpConverter.Plugin;
 using KeePassLib;
 using NUnit.Framework;
@@ -13,7 +14,7 @@ namespace Adrium.KeepassPfpConverter.Test
 		{
 			var entry = GetPfpEntryObject();
 
-			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new MemoryProtectionConfig()));
+			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new List<string> { PwDefs.PasswordField }));
 
 			StringAssert.Contains(entry.site, resultidx[PwDefs.TitleField]);
 			Assert.AreEqual(entry.site, resultidx[PwDefs.UrlField]);
@@ -46,7 +47,7 @@ namespace Adrium.KeepassPfpConverter.Test
 			if (field == PwDefs.UserNameField) entry.name = value;
 			if (field == PwDefs.PasswordField) entry.password = value;
 
-			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new MemoryProtectionConfig()));
+			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new List<string>()));
 
 			Assert.IsNull(resultidx[field]);
 		}
@@ -67,7 +68,7 @@ namespace Adrium.KeepassPfpConverter.Test
 			entry.revision = revin;
 			entry.notes = notein;
 
-			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new MemoryProtectionConfig()));
+			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new List<string>()));
 
 			Assert.AreEqual(revexp, resultidx[Util.RevisionField]);
 			Assert.AreEqual(noteexp, resultidx[PwDefs.NotesField]);
@@ -137,6 +138,20 @@ namespace Adrium.KeepassPfpConverter.Test
 				password = "secret",
 				revision = ""
 			};
+		}
+
+		[Test]
+		public void TestGetMemoryProtection()
+		{
+			var protect = new MemoryProtectionConfig();
+			protect.ProtectUserName = true;
+			var result = Util.GetMemoryProtection(protect);
+
+			CollectionAssert.Contains(result, PwDefs.PasswordField);
+			CollectionAssert.Contains(result, PwDefs.UserNameField);
+			CollectionAssert.DoesNotContain(result, PwDefs.NotesField);
+			CollectionAssert.DoesNotContain(result, PwDefs.TitleField);
+			CollectionAssert.DoesNotContain(result, PwDefs.UrlField);
 		}
 
 		private PwEntryIndexer GetKeepassEntryObject()

@@ -19,7 +19,9 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			slLogger.SetText("Decrypting backup...", LogStatusType.Info);
 
 			var pfp = new PfpConvert();
-			var protect = pwStorage.MemoryProtection;
+			var protect = Util.GetMemoryProtection(pwStorage.MemoryProtection);
+			protect.Add("PIN");
+			protect.Add("CVV");
 
 			var entries = pfp.Load(sInput, form.MasterPassword);
 			var pw = pfp.GetPasswordGetter(form.MasterPassword);

@@ -14,7 +14,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 		private const string EmptyUsername = "(none)";
 		private const string EmptyPassword = "X";
 
-		public static PwEntry GetKeepassEntry(PassEntry entry, GetPassword getPassword, MemoryProtectionConfig protect)
+		public static PwEntry GetKeepassEntry(PassEntry entry, GetPassword getPassword, ICollection<string> protect)
 		{
 			var result = new PwEntry(true, true);
 			var resultidx = new PwEntryIndexer(result, protect);
@@ -92,6 +92,19 @@ namespace Adrium.KeepassPfpConverter.Plugin
 
 			if (result.notes.Equals(""))
 				result.notes = null;
+
+			return result;
+		}
+
+		public static ICollection<string> GetMemoryProtection(MemoryProtectionConfig protect)
+		{
+			var result = new List<string>();
+
+			if (protect.ProtectNotes) result.Add(PwDefs.NotesField);
+			if (protect.ProtectPassword) result.Add(PwDefs.PasswordField);
+			if (protect.ProtectTitle) result.Add(PwDefs.TitleField);
+			if (protect.ProtectUrl) result.Add(PwDefs.UrlField);
+			if (protect.ProtectUserName) result.Add(PwDefs.UserNameField);
 
 			return result;
 		}
