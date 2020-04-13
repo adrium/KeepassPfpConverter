@@ -6,9 +6,9 @@ if [ ! -f KeepassPfpConverter.sln ]; then
 fi
 
 msbuild /p:Configuration=Release
-rm bin/Release/KeePass.exe
 
-mv bin/Release PfpConverter
+cp -a bin/Release PfpConverter
+rm PfpConverter/KeePass.exe
 
 rm PfpConverter.zip
 zip -Dr PfpConverter.zip PfpConverter
