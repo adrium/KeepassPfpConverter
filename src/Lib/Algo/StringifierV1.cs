@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Adrium.KeepassPfpConverter.Algo
 {
@@ -12,49 +11,18 @@ namespace Adrium.KeepassPfpConverter.Algo
 
 		public string Stringify(string bytes, bool lower, bool upper, bool number, bool symbol)
 		{
-			var array = Convert.FromBase64String(bytes);
-			var charsets = new List<string>();
+			var charsets = new List<StringifierUniversal.Settings>();
 
 			if (lower)
-				charsets.Add(LOWERCASE);
+				charsets.Add(new StringifierUniversal.Settings(LOWERCASE, 1));
 			if (upper)
-				charsets.Add(UPPERCASE);
+				charsets.Add(new StringifierUniversal.Settings(UPPERCASE, 1));
 			if (number)
-				charsets.Add(NUMBER);
+				charsets.Add(new StringifierUniversal.Settings(NUMBER, 1));
 			if (symbol)
-				charsets.Add(SYMBOL);
+				charsets.Add(new StringifierUniversal.Settings(SYMBOL, 1));
 
-			var numChars = 0;
-			foreach (var chars in charsets)
-				numChars += chars.Length;
-
-			var seen = new List<string>();
-
-			var result = new char[array.Length];
-
-			for (var i = 0; i < array.Length; i++) {
-				if (charsets.Count - seen.Count >= array.Length - i) {
-					foreach (var value in seen) {
-						charsets.Remove(value);
-					}
-					seen.Clear();
-					numChars = 0;
-					foreach (var chars in charsets)
-						numChars += chars.Length;
-				}
-
-				var index = array[i] % numChars;
-				foreach (var charset in charsets) {
-					if (index < charset.Length) {
-						result[i] = charset[index];
-						if (!seen.Contains(charset))
-							seen.Add(charset);
-						break;
-					}
-					index -= charset.Length;
-				}
-			}
-			return new string(result);
+			return new StringifierUniversal(charsets).Stringify(bytes);
 		}
 	}
 }
