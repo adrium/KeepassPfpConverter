@@ -46,10 +46,10 @@ namespace Adrium.KeepassPfpConverter.Test
 			return Fn("password")(new StoredEntry { password = password });
 		}
 
-		[TestCase(ExpectedResult = "xqzrttvppgfmghyz")]
+		[TestCase(ExpectedResult = "h2z}+tFz;8s^+uYk")]
 		public string TestGetPasswordGenerated2()
 		{
-			return Fn("password")(new GeneratedEntry { site = "example.com", name = "user", length = 16, lower = true });
+			return Fn("password")(new GeneratedEntry { site = "example.com", name = "user" });
 		}
 
 		[Test]
