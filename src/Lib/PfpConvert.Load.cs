@@ -9,7 +9,6 @@ namespace Adrium.KeepassPfpConverter
 {
 	public partial class PfpConvert
 	{
-		private const string GENERATEDV2_TYPE = "generated2";
 		private const string MAC_MESSAGE = "mac check in GCM failed";
 
 		public IList<BaseEntry> Load(Stream stream, string password)
