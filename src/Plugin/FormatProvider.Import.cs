@@ -21,6 +21,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			var pfp = new PfpConvert();
 			var protect = Util.GetMemoryProtection(pwStorage.MemoryProtection);
 			protect.Add("PIN");
+			protect.Add("PUK");
 			protect.Add("CVV");
 
 			var entries = pfp.Load(sInput, form.MasterPassword);
