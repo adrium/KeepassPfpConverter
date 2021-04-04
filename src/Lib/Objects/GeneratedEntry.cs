@@ -2,7 +2,7 @@
 {
 	public class GeneratedEntry : PassEntry
 	{
-		public string type = "generated2";
+		public string type = PfpConvert.GENERATED_PFP_TYPE;
 		public int length = 16;
 		public bool lower = true;
 		public bool upper = true;

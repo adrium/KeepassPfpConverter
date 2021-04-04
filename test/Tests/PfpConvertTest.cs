@@ -47,7 +47,7 @@ namespace Adrium.KeepassPfpConverter.Test
 		}
 
 		[TestCase(ExpectedResult = "h2z}+tFz;8s^+uYk")]
-		public string TestGetPasswordGenerated2()
+		public string TestGetPasswordGeneratedPfp()
 		{
 			return Fn("password")(new GeneratedEntry { site = "example.com", name = "user" });
 		}
@@ -55,7 +55,7 @@ namespace Adrium.KeepassPfpConverter.Test
 		[TestCase(ExpectedResult = "r4wC!qMGg0zyaBS#")]
 		public string TestGetPasswordGeneratedAep()
 		{
-			return Fn("password")(new GeneratedEntry { site = "example.com", name = "user", type = "generatedAep" });
+			return Fn("password")(new GeneratedEntry { site = "example.com", name = "user", type = PfpConvert.GENERATED_AEP_TYPE });
 		}
 
 		[Test]

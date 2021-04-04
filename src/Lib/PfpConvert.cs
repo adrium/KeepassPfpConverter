@@ -7,12 +7,12 @@ namespace Adrium.KeepassPfpConverter
 {
 	public partial class PfpConvert
 	{
-		private const string SALT_KEY = "salt";
-		private const string HMAC_KEY = "hmac-secret";
-		private const string STORAGE_PREFIX = "site:";
-		private const string PFP_APPLICATION = "pfp";
-		private const string GENERATEDV2_TYPE = "generated2";
-		private const string GENERATEDAEP_TYPE = "generatedAep";
+		public const string SALT_KEY = "salt";
+		public const string HMAC_KEY = "hmac-secret";
+		public const string STORAGE_PREFIX = "site:";
+		public const string PFP_APPLICATION = "pfp";
+		public const string GENERATED_PFP_TYPE = "generated2";
+		public const string GENERATED_AEP_TYPE = "generatedAep";
 
 		private delegate string Cipher(string data);
 
@@ -27,9 +27,9 @@ namespace Adrium.KeepassPfpConverter
 					return stored.password;
 
 				if (entry is GeneratedEntry gen)
-					if (GENERATEDV2_TYPE.Equals(gen.type))
+					if (GENERATED_PFP_TYPE.Equals(gen.type))
 						return getgenpw.Get(gen);
-					else if (GENERATEDAEP_TYPE.Equals(gen.type))
+					else if (GENERATED_AEP_TYPE.Equals(gen.type))
 						return getaeppw.Get(gen);
 
 				throw new ArgumentException($"Unsupported entry for {entry.name}@{entry.site}");
