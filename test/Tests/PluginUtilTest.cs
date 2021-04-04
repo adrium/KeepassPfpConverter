@@ -14,7 +14,7 @@ namespace Adrium.KeepassPfpConverter.Test
 		{
 			var entry = GetPfpEntryObject();
 
-			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new List<string> { PwDefs.PasswordField }));
+			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new List<string> { PwDefs.PasswordField }), null);
 
 			StringAssert.Contains(entry.site, resultidx[PwDefs.TitleField]);
 			Assert.AreEqual(entry.site, resultidx[PwDefs.UrlField]);
@@ -47,7 +47,7 @@ namespace Adrium.KeepassPfpConverter.Test
 			if (field == PwDefs.UserNameField) entry.name = value;
 			if (field == PwDefs.PasswordField) entry.password = value;
 
-			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new List<string>()));
+			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new List<string> { }), null);
 
 			Assert.IsNull(resultidx[field]);
 		}
@@ -68,7 +68,7 @@ namespace Adrium.KeepassPfpConverter.Test
 			entry.revision = revin;
 			entry.notes = notein;
 
-			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new List<string>()));
+			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new List<string> { }), null);
 
 			Assert.AreEqual(revexp, resultidx[Util.RevisionField]);
 			Assert.AreEqual(noteexp, resultidx[PwDefs.NotesField]);
@@ -157,7 +157,7 @@ namespace Adrium.KeepassPfpConverter.Test
 
 		private PwEntryIndexer GetKeepassEntryObject()
 		{
-			return new PwEntryIndexer(new PwEntry(true, true)) {
+			return new PwEntryIndexer(new PwEntry(true, true), new List<string> { }) {
 				[PwDefs.UrlField] = "example.com",
 				[PwDefs.UserNameField] = "user",
 				[PwDefs.PasswordField] = "secret",

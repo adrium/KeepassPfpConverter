@@ -9,10 +9,8 @@ namespace Adrium.KeepassPfpConverter.Plugin
 		public readonly PwEntry entry;
 		public readonly ICollection<string> protect;
 
-		public PwEntryIndexer(PwEntry entry, ICollection<string> protect = null)
+		public PwEntryIndexer(PwEntry entry, ICollection<string> protect)
 		{
-			if (protect == null)
-				protect = new List<string> { PwDefs.PasswordField };
 			this.entry = entry;
 			this.protect = protect;
 		}

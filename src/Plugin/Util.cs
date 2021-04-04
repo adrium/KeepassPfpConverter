@@ -51,7 +51,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 
 		public static PassEntry GetPfpEntry(PwEntry pwEntry)
 		{
-			var entry = new PwEntryIndexer(pwEntry);
+			var entry = new PwEntryIndexer(pwEntry, null);
 			var result = new StoredEntry();
 			var fields = new SortedDictionary<string, string> {
 				{ PwDefs.UserNameField, EmptyUsername },
