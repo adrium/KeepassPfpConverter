@@ -21,15 +21,12 @@ Join the discussion on the [SourceForge announcement thread](https://sourceforge
 * .NET Framework 2.0 on Windows XP
 * .NET Framework 4.0 on Windows 10
 
-### Unsupported
-
-* Legacy versions
-
 ## Download and installation
 
-You can get the latest release from the [Releases](https://github.com/adrium/KeepassPfpConverter/releases/latest) page. To install, unpack the archive and copy its contents to the KeePass Plugins directory.
+You can get the latest release from the [Releases](https://github.com/adrium/KeepassPfpConverter/releases/latest) page.
+Copy `PfpConverter.plgx` to the [KeePass Plugins](https://keepass.info/help/v2/plugins.html) directory to install.
 
-KeePass 2.09 or higher is required for the plugin to work.
+KeePass 2.18 or higher is required for the plugin to work.
 
 ## Custom Fields
 
@@ -44,8 +41,10 @@ Values consisting of multiple lines are not supported.
 The tool can be used to decrypt and encrypt backup JSON files
 for manual editing or import from other tools.
 
+It can also be used to generate passwords.
+
 ## Build
 
-Just run the [build script](plgx/build.sh).
+Just run the build scripts.
 
 Instead of sacrificing syntactic suger, the build relies on [ILSpyConvert](https://github.com/adrium/ILSpyConvert) to generate C# 2 compatible code.
