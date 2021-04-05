@@ -33,7 +33,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 				if (!(baseentry is PassEntry entry))
 					continue;
 
-				slLogger.SetText($"Importing {entry.name}@{entry.site}...", LogStatusType.Info);
+				slLogger.SetText($"Importing {i} - {entry.site} - {entry.name}...", LogStatusType.Info);
 
 				var pwEntry = Util.GetKeepassEntry(entry, pw, protect);
 
