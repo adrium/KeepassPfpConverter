@@ -39,7 +39,7 @@ namespace Adrium.KeepassPfpConverter.Test
 		// TODO null and ""
 		[TestCase(PwDefs.UrlField, "pfp.invalid")]
 		[TestCase(PwDefs.UserNameField, "(none)")]
-		[TestCase(PwDefs.PasswordField, "X")]
+		[TestCase(PwDefs.PasswordField, "x")]
 		public void TestGetKeepassEntryEmptyFields(string field, string value)
 		{
 			var entry = GetPfpEntryObject();
@@ -85,7 +85,7 @@ namespace Adrium.KeepassPfpConverter.Test
 
 			Assert.AreEqual("pfp.invalid", result.site);
 			Assert.AreEqual("(none)", result.name);
-			Assert.AreEqual("X", result.password);
+			Assert.AreEqual("x", result.password);
 			Assert.AreEqual("", result.revision);
 			Assert.AreEqual(null, result.notes);
 		}

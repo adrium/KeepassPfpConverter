@@ -12,7 +12,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 
 		private const string EmptyUrl = "pfp.invalid";
 		private const string EmptyUsername = "(none)";
-		private const string EmptyPassword = "X";
+		private const string EmptyPassword = "x";
 
 		public static PwEntry GetKeepassEntry(PassEntry entry, GetPassword getPassword, ICollection<string> protect)
 		{
@@ -25,10 +25,10 @@ namespace Adrium.KeepassPfpConverter.Plugin
 
 			var pw = getPassword(entry);
 
-			if (!pw.Equals(EmptyPassword))
+			if (!pw.ToLower().Equals(EmptyPassword))
 				resultidx[PwDefs.PasswordField] = pw;
 
-			if (!entry.name.Equals(EmptyUsername))
+			if (!entry.name.ToLower().Equals(EmptyUsername))
 				resultidx[PwDefs.UserNameField] = entry.name;
 
 			if (!entry.revision.Equals(""))
