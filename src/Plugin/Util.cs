@@ -23,6 +23,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			foreach (var field in fields)
 				resultidx[field.Key] = field.Value;
 
+			var title = entry.name;
 			var pw = getPassword(entry);
 
 			if (!pw.ToLower().Equals(EmptyPassword))
@@ -31,15 +32,17 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			if (!entry.name.ToLower().Equals(EmptyUsername))
 				resultidx[PwDefs.UserNameField] = entry.name;
 
-			if (!entry.revision.Equals(""))
+			if (!entry.revision.Equals("")) {
 				resultidx[RevisionField] = entry.revision;
-
-			if (entry.site.Equals(EmptyUrl)) {
-				resultidx[PwDefs.TitleField] = entry.name;
-			} else {
-				resultidx[PwDefs.TitleField] = entry.site;
-				resultidx[PwDefs.UrlField] = entry.site;
+				title = $"{title} #{entry.revision}";
 			}
+
+			if (!entry.site.Equals(EmptyUrl)) {
+				resultidx[PwDefs.UrlField] = entry.site;
+				title = $"{entry.site} - {title}";
+			}
+
+			resultidx[PwDefs.TitleField] = title;
 
 			notes = notes.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n").Trim();
 
