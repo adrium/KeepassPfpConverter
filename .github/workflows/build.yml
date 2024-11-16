@@ -1,0 +1,37 @@
+name: Build
+
+on:
+  push:
+    branches: [master,dev]
+
+jobs:
+
+  build:
+    runs-on: [ubuntu-latest]
+    container: ubuntu:focal
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Add download.mono-project.com/repo/ubuntu
+      run: >
+        apt-get update && apt-get install -y gnupg ca-certificates &&
+        echo "deb http://download.mono-project.com/repo/ubuntu vs-focal main" > /etc/apt/sources.list.d/mono.list &&
+        apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A6A19B38D3D831EF &&
+        apt-get update
+    - name: Install OS dependencies
+      run: 'apt-get install -y --no-install-recommends git patch curl zip unzip mono-complete msbuild nuget xvfb'
+    - name: Get dependencies
+      run: >
+        curl -LO https://sourceforge.net/projects/keepass/files/KeePass%202.x/2.18/KeePass-2.18.zip/download &&
+        curl -LO https://github.com/adrium/ILSpyConvert/releases/latest/download/ILSpyConvert.zip &&
+        nuget restore &&
+        unzip download &&
+        unzip ILSpyConvert.zip &&
+        cp KeePass.exe packages
+    - name: Build
+      run: 'export ILSPYCONVERT=$PWD/ILSpyConvert.exe; ./build/zip.sh && xvfb-run ./build/plgx.sh'
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: PfpConverter
+        path: PfpConverter.*
