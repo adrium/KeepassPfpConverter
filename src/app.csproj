@@ -1,68 +1,41 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Plugin</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A5E17545-754C-44BA-B2AF-1560FF894558}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>Adrium.KeepassPfpConverter</RootNamespace>
-    <AssemblyName>PfpConverter</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ExternalConsole>true</ExternalConsole>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <AllowedReferenceRelatedFileExtensions>none</AllowedReferenceRelatedFileExtensions>
-    <Optimize>true</Optimize>
-    <OutputPath>..\bin\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ExternalConsole>true</ExternalConsole>
-    <MSBuildWarningsAsMessages>MSB3276</MSBuildWarningsAsMessages>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Plugin|AnyCPU' ">
-    <AllowedReferenceRelatedFileExtensions>none</AllowedReferenceRelatedFileExtensions>
-    <Optimize>true</Optimize>
-    <OutputPath>..\bin\Plugin</OutputPath>
-    <OutputType>Library</OutputType>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="BouncyCastle.Crypto">
-      <HintPath>..\packages\BouncyCastle.1.8.9\lib\BouncyCastle.Crypto.dll</HintPath>
-    </Reference>
-    <Reference Include="KeePass">
-      <HintPath>..\packages\KeePass.exe</HintPath>
-    </Reference>
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.13.0.2\lib\net20\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Lib\*.cs" />
-    <Compile Include="Lib\Algo\*.cs" />
-    <Compile Include="Lib\Objects\*.cs" />
-    <Compile Include="Plugin\*.cs" Condition=" '$(Configuration)' == 'Plugin' " />
-    <Compile Include="Program\*.cs" Condition=" '$(Configuration)' != 'Plugin' " />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-    <None Include="app.config" Condition=" '$(Configuration)' != 'Plugin' " />
-    <None Include="PfpConverter.plgx.csproj" Condition=" '$(Configuration)' == 'Plugin' ">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<AssemblyName>PfpConverter</AssemblyName>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net20</TargetFramework>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<NoStandardLib>true</NoStandardLib>
+		<Configurations>Debug;Release;Plugin</Configurations>
+	</PropertyGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+		<DebugType>none</DebugType>
+	</PropertyGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)' == 'Plugin' ">
+		<OutputType>Library</OutputType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="BouncyCastle" Version="1.*" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.*" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(Configuration)' != 'Plugin' ">
+		<Compile Remove="Plugin/*" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(Configuration)' == 'Plugin' ">
+		<Compile Remove="Program/*" />
+		<None Include="PfpConverter.plgx.csproj">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<Reference Include="KeePass">
+			<HintPath>..\packages\KeePass.exe</HintPath>
+		</Reference>
+		<Reference Include="System.Drawing" />
+		<Reference Include="System.Windows.Forms" />
+	</ItemGroup>
+
 </Project>

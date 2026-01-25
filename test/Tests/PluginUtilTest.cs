@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if PLUGIN
+using System.Collections.Generic;
 using Adrium.KeepassPfpConverter.Objects;
 using Adrium.KeepassPfpConverter.Plugin;
 using KeePassLib;
@@ -170,3 +171,4 @@ namespace Adrium.KeepassPfpConverter.Test
 		}
 	}
 }
+#endif
