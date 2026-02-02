@@ -49,19 +49,19 @@ namespace Adrium.KeepassPfpConverter.Test
 
 			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new List<string> { }), null);
 
-			Assert.IsNull(resultidx[field]);
+			Assert.IsEmpty(resultidx[field]);
 		}
 
 		// TODO [TestCase(null, null, null, null, null, null)]
-		[TestCase("", null, null, null, null, null)]
-		[TestCase("", "Notes", null, "Notes", null, null)]
-		[TestCase("rev", "Notes", "rev", "Notes", null, null)]
-		[TestCase("", "Test: OK", null, null, "OK", null)]
-		[TestCase("", "Test: Foo: Bar", null, null, "Foo: Bar", null)]
-		[TestCase("", "Test: OK\nNotes", null, "Notes", "OK", null)]
-		[TestCase("", "Test: OK\nFoo: Bar\nNotes", null, "Notes", "OK", "Bar")]
+		[TestCase("", "", "", "", "", "")]
+		[TestCase("", "Notes", "", "Notes", "", "")]
+		[TestCase("rev", "Notes", "rev", "Notes", "", "")]
+		[TestCase("", "Test: OK", "", "", "OK", "")]
+		[TestCase("", "Test: Foo: Bar", "", "", "Foo: Bar", "")]
+		[TestCase("", "Test: OK\nNotes", "", "Notes", "OK", "")]
+		[TestCase("", "Test: OK\nFoo: Bar\nNotes", "", "Notes", "OK", "Bar")]
 		[TestCase("rev", "Test: OK\nFoo: Bar\nNotes", "rev", "Notes", "OK", "Bar")]
-		[TestCase("new", "Revision: old", "new", null, null, null)]
+		[TestCase("new", "Revision: old", "new", "", "", "")]
 		public void TestGetKeepassEntryExtraFields(string revin, string notein, string revexp, string noteexp, string testexp, string fooexp)
 		{
 			var entry = GetPfpEntryObject();

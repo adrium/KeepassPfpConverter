@@ -30,10 +30,12 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			var i = 0;
 
 			foreach (var baseentry in entries) {
-				if (!(baseentry is PassEntry entry))
+				var entry = baseentry as PassEntry;
+
+				if (entry == null)
 					continue;
 
-				slLogger.SetText($"Importing {i} - {entry.site} - {entry.name}...", LogStatusType.Info);
+				slLogger.SetText(string.Format("Importing {0} - {1} - {2}...", i, entry.site, entry.name), LogStatusType.Info);
 
 				var pwEntry = Util.GetKeepassEntry(entry, pw, protect);
 
@@ -41,7 +43,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 				i++;
 			}
 
-			slLogger.SetText($"Imported {i} entries.", LogStatusType.Info);
+			slLogger.SetText(string.Format("Imported {0} entries.", i), LogStatusType.Info);
 		}
 	}
 }

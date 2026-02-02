@@ -25,7 +25,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			var pfp = new PfpConvert();
 			pfp.Save(sOutput, form.MasterPassword, entries);
 
-			slLogger.SetText($"Exported {entries.Count} entries.", LogStatusType.Info);
+			slLogger.SetText(string.Format("Exported {0} entries.", entries.Count), LogStatusType.Info);
 
 			return true;
 		}

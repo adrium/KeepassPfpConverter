@@ -5,6 +5,7 @@
 		<OutputType>Library</OutputType>
 		<TargetFramework>net20</TargetFramework>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<LangVersion>4</LangVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

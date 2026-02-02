@@ -5,7 +5,7 @@ namespace PfpConverter
 {
 	public class PfpConverterExt : Plugin
 	{
-		public override string UpdateUrl => "https://raw.githubusercontent.com/adrium/KeepassPfpConverter/master/update.txt";
+		public override string UpdateUrl { get { return "https://raw.githubusercontent.com/adrium/KeepassPfpConverter/master/update.txt"; } }
 
 		public override bool Initialize(IPluginHost host)
 		{

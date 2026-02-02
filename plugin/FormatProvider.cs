@@ -7,12 +7,12 @@ namespace Adrium.KeepassPfpConverter.Plugin
 {
 	partial class FormatProvider : FileFormatProvider
 	{
-		public override bool SupportsImport => true;
-		public override bool SupportsExport => true;
-		public override bool ImportAppendsToRootGroupOnly => true;
-		public override bool RequiresFile => true;
-		public override string FormatName => "Pain-free Passwords backup";
-		public override string DefaultExtension => "json";
-		public override string ApplicationGroup => KeePass.Resources.KPRes.PasswordManagers;
+		public override bool SupportsImport { get { return true; } }
+		public override bool SupportsExport { get { return true; } }
+		public override bool ImportAppendsToRootGroupOnly { get { return true; } }
+		public override bool RequiresFile { get { return true; } }
+		public override string FormatName { get { return "Pain-free Passwords backup"; } }
+		public override string DefaultExtension { get { return "json"; } }
+		public override string ApplicationGroup { get { return KeePass.Resources.KPRes.PasswordManagers; } }
 	}
 }

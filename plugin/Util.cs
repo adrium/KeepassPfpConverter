@@ -34,12 +34,12 @@ namespace Adrium.KeepassPfpConverter.Plugin
 
 			if (!entry.revision.Equals("")) {
 				resultidx[RevisionField] = entry.revision;
-				title = $"{title} #{entry.revision}";
+				title = string.Format("{0} #{1}", title, entry.revision);
 			}
 
 			if (!entry.site.Equals(EmptyUrl)) {
 				resultidx[PwDefs.UrlField] = entry.site;
-				title = $"{entry.site} - {title}";
+				title = string.Format("{0} - {1}", entry.site, title);
 			}
 
 			resultidx[PwDefs.TitleField] = title;
@@ -86,7 +86,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 
 			foreach (var field in fields) {
 				var value = field.Value.Replace("\r\n", " ").Replace("\n", " ");
-				result.notes = result.notes.Replace("%fields%", $"{field.Key}: {value}\n%fields%");
+				result.notes = result.notes.Replace("%fields%", string.Format("{0}: {1}\n%fields%", field.Key, value));
 			}
 
 			result.site = GetSitePart(result.site);
