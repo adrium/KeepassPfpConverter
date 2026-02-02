@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Adrium.KeepassPfpConverter.Objects;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;

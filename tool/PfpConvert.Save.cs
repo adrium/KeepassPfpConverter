@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using Adrium.KeepassPfpConverter.Algo;
 using Adrium.KeepassPfpConverter.Objects;

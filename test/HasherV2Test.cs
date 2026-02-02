@@ -1,4 +1,4 @@
-﻿using Adrium.KeepassPfpConverter.Algo;
+using Adrium.KeepassPfpConverter.Algo;
 using NUnit.Framework;
 
 namespace Adrium.KeepassPfpConverter.Test

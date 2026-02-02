@@ -1,4 +1,4 @@
-﻿namespace Adrium.KeepassPfpConverter.Objects
+namespace Adrium.KeepassPfpConverter.Objects
 {
 	public class GeneratedEntry : PassEntry
 	{

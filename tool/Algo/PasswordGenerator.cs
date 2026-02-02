@@ -1,4 +1,4 @@
-﻿using Adrium.KeepassPfpConverter.Objects;
+using Adrium.KeepassPfpConverter.Objects;
 
 namespace Adrium.KeepassPfpConverter.Algo
 {

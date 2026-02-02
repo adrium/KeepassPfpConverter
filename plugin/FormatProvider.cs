@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using KeePass.DataExchange;
 using KeePassLib;
 using KeePassLib.Interfaces;

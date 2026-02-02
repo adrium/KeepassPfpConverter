@@ -1,4 +1,4 @@
-﻿using Adrium.KeepassPfpConverter.Objects;
+using Adrium.KeepassPfpConverter.Objects;
 using KeePass.DataExchange;
 using KeePassLib;
 using KeePassLib.Interfaces;

@@ -1,4 +1,4 @@
-﻿using Adrium.KeepassPfpConverter.Algo;
+using Adrium.KeepassPfpConverter.Algo;
 using Adrium.KeepassPfpConverter.Objects;
 using NUnit.Framework;
 

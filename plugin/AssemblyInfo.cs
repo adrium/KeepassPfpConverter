@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 
 [assembly: AssemblyTitle ("PfpConverter")]
 [assembly: AssemblyDescription ("Import and export backup files of Pain-free Passwords")]

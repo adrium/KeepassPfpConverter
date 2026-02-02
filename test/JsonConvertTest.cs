@@ -1,4 +1,4 @@
-﻿using Adrium.KeepassPfpConverter.Objects;
+using Adrium.KeepassPfpConverter.Objects;
 using NUnit.Framework;
 
 namespace Adrium.KeepassPfpConverter.Test
