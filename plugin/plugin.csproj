@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<AssemblyName>PfpConverter</AssemblyName>
+		<OutputType>Library</OutputType>
+		<TargetFramework>net20</TargetFramework>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\tool\tool.csproj" />
+		<Reference Include="KeePass">
+			<HintPath>..\packages\KeePass.exe</HintPath>
+		</Reference>
+		<Reference Include="System.Drawing" />
+		<Reference Include="System.Windows.Forms" />
+	</ItemGroup>
+
+</Project>

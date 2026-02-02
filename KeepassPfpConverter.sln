@@ -1,27 +1,33 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "app", "src\app.csproj", "{A5E17545-754C-44BA-B2AF-1560FF894558}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "plugin", "plugin\plugin.csproj", "{2CDFD586-355F-346C-92BF-961D4783A12E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test", "test\test.csproj", "{CBFB22BB-D666-4A4D-AE83-05884C6176A6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tool", "tool\tool.csproj", "{A5E17545-754C-44BA-B2AF-1560FF894558}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Program|Any CPU = Program|Any CPU
 		Release|Any CPU = Release|Any CPU
-		Plugin|Any CPU = Plugin|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2CDFD586-355F-346C-92BF-961D4783A12E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2CDFD586-355F-346C-92BF-961D4783A12E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2CDFD586-355F-346C-92BF-961D4783A12E}.Program|Any CPU.ActiveCfg = Debug|Any CPU
+		{2CDFD586-355F-346C-92BF-961D4783A12E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2CDFD586-355F-346C-92BF-961D4783A12E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A5E17545-754C-44BA-B2AF-1560FF894558}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A5E17545-754C-44BA-B2AF-1560FF894558}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5E17545-754C-44BA-B2AF-1560FF894558}.Program|Any CPU.ActiveCfg = Program|Any CPU
+		{A5E17545-754C-44BA-B2AF-1560FF894558}.Program|Any CPU.Build.0 = Program|Any CPU
 		{A5E17545-754C-44BA-B2AF-1560FF894558}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A5E17545-754C-44BA-B2AF-1560FF894558}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A5E17545-754C-44BA-B2AF-1560FF894558}.Plugin|Any CPU.ActiveCfg = Plugin|Any CPU
-		{A5E17545-754C-44BA-B2AF-1560FF894558}.Plugin|Any CPU.Build.0 = Plugin|Any CPU
 		{CBFB22BB-D666-4A4D-AE83-05884C6176A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CBFB22BB-D666-4A4D-AE83-05884C6176A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBFB22BB-D666-4A4D-AE83-05884C6176A6}.Program|Any CPU.ActiveCfg = Debug|Any CPU
 		{CBFB22BB-D666-4A4D-AE83-05884C6176A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CBFB22BB-D666-4A4D-AE83-05884C6176A6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CBFB22BB-D666-4A4D-AE83-05884C6176A6}.Plugin|Any CPU.ActiveCfg = Plugin|Any CPU
-		{CBFB22BB-D666-4A4D-AE83-05884C6176A6}.Plugin|Any CPU.Build.0 = Plugin|Any CPU
 	EndGlobalSection
 EndGlobal

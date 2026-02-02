@@ -1,20 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<AssemblyName>PfpConverter</AssemblyName>
-		<OutputType>Exe</OutputType>
+		<AssemblyName>PfpTool</AssemblyName>
+		<OutputType>Library</OutputType>
 		<TargetFramework>net20</TargetFramework>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<NoStandardLib>true</NoStandardLib>
-		<Configurations>Debug;Release;Plugin</Configurations>
+		<Configurations>Debug;Release;Program</Configurations>
 	</PropertyGroup>
 
-	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+	<PropertyGroup Condition=" '$(Configuration)' == 'Program' ">
 		<DebugType>none</DebugType>
-	</PropertyGroup>
-
-	<PropertyGroup Condition=" '$(Configuration)' == 'Plugin' ">
-		<OutputType>Library</OutputType>
+		<OutputType>Exe</OutputType>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -22,20 +19,8 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.*" />
 	</ItemGroup>
 
-	<ItemGroup Condition=" '$(Configuration)' != 'Plugin' ">
-		<Compile Remove="Plugin/*" />
-	</ItemGroup>
-
-	<ItemGroup Condition=" '$(Configuration)' == 'Plugin' ">
+	<ItemGroup Condition=" '$(Configuration)' != 'Program' ">
 		<Compile Remove="Program/*" />
-		<None Include="PfpConverter.plgx.csproj">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<Reference Include="KeePass">
-			<HintPath>..\packages\KeePass.exe</HintPath>
-		</Reference>
-		<Reference Include="System.Drawing" />
-		<Reference Include="System.Windows.Forms" />
 	</ItemGroup>
 
 </Project>

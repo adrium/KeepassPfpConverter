@@ -3,11 +3,10 @@
 	<PropertyGroup>
 		<AssemblyName>Adrium.KeepassPfpConverter.Test</AssemblyName>
 		<TargetFramework>net80</TargetFramework>
-		<Configurations>Debug;Release;Plugin</Configurations>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="Data\passwords.json">
+		<EmbeddedResource Include="passwords.json">
 			<LogicalName>passwords.json</LogicalName>
 		</EmbeddedResource>
 	</ItemGroup>
@@ -19,13 +18,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\src\app.csproj" />
+		<ProjectReference Include="..\plugin\plugin.csproj" />
+		<ProjectReference Include="..\tool\tool.csproj" />
 	</ItemGroup>
 
-	<ItemGroup Condition=" '$(Configuration)' == 'Plugin' ">
-		<Reference Include="KeePass">
-			<HintPath>..\packages\KeePass.exe</HintPath>
-		</Reference>
+	<ItemGroup>
+	  <Reference Include="KeePass">
+	    <HintPath>..\packages\KeePass.exe</HintPath>
+	  </Reference>
 	</ItemGroup>
 
 </Project>
