@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Project>
 	<PropertyGroup>
 		<AssemblyName>PfpConverter</AssemblyName>
@@ -13,8 +12,11 @@
 		<Reference Include="BouncyCastle.Crypto">
 			<HintPath>BouncyCastle.Crypto.dll</HintPath>
 		</Reference>
+		<Reference Include="PfpTool">
+			<HintPath>PfpTool.dll</HintPath>
+		</Reference>
 	</ItemGroup>
 	<ItemGroup>
-		<Compile Include="PfpConverter.cs" />
+		<Compile Include="Plugin.cs" />
 	</ItemGroup>
 </Project>

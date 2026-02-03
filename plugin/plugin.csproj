@@ -11,7 +11,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\tool\tool.csproj" />
 		<Reference Include="KeePass">
-			<HintPath>..\packages\KeePass.exe</HintPath>
+			<HintPath>..\build\KeePass.exe</HintPath>
 		</Reference>
 		<Reference Include="System.Drawing" />
 		<Reference Include="System.Windows.Forms" />
