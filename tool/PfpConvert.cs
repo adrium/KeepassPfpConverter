@@ -13,6 +13,7 @@ namespace Adrium.KeepassPfpConverter
 		public const string PFP_APPLICATION = "pfp";
 		public const string GENERATED_PFP_TYPE = "generated2";
 		public const string GENERATED_AEP_TYPE = "generatedAep";
+		public const string STORED_TYPE = "stored";
 
 		private delegate string Cipher(string data);
 

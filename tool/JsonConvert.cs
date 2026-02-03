@@ -4,12 +4,13 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 // https://github.com/JamesNK/Newtonsoft.Json/issues/1331
+// https://www.tutorialpedia.org/blog/json-net-serialize-deserialize-derived-types/
+// https://github.com/Azure/durabletask/blob/main/src/DurableTask.Core/Serializing/JsonCreationConverter.cs
 namespace Adrium.KeepassPfpConverter
 {
 	public class JsonConvert
 	{
 		private const string TYPE_KEY = "type";
-		private const string STORED_TYPE = "stored";
 
 		private readonly JsonSerializerSettings settings;
 
@@ -34,31 +35,28 @@ namespace Adrium.KeepassPfpConverter
 
 		private class EntryConverter : JsonConverter<BaseEntry>
 		{
-			private bool block; // Prevent recursion
-			public override bool CanRead => base.CanRead && (block = !block);
-			public override bool CanWrite => base.CanWrite && (block = !block);
+			public override bool CanWrite => false;
 
 			public override BaseEntry ReadJson(JsonReader reader, Type objectType, BaseEntry existingValue, bool hasExistingValue, JsonSerializer serializer)
 			{
-				block = true;
 				var obj = JObject.Load(reader);
-				var str = obj.Value<string>(TYPE_KEY);
+				var type = obj.Value<string>(TYPE_KEY);
 
-				var type = str == null ? typeof(SiteEntry) :
-					STORED_TYPE.Equals(str) ? typeof(StoredEntry) :
-					typeof(GeneratedEntry);
+				BaseEntry result;
+				if (type == null)
+					result = new SiteEntry();
+				else if (type == PfpConvert.STORED_TYPE)
+					result = new StoredEntry();
+				else
+					result = new GeneratedEntry();
 
-				var result = (BaseEntry)serializer.Deserialize(obj.CreateReader(), type);
+				serializer.Populate(obj.CreateReader(), result);
 				return result;
 			}
 
 			public override void WriteJson(JsonWriter writer, BaseEntry value, JsonSerializer serializer)
 			{
-				block = true;
-				var obj = JObject.FromObject(value, serializer);
-				if (value is StoredEntry)
-					obj.AddFirst(new JProperty(TYPE_KEY, STORED_TYPE));
-				obj.WriteTo(writer);
+				throw new NotSupportedException();
 			}
 		}
 	}
