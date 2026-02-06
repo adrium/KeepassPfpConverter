@@ -45,7 +45,7 @@ namespace Adrium.KeepassPfpConverter.Test
 		{
 			var json = new JsonConvert();
 			var result = json.Serialize(new StoredEntry { password = "secret" });
-			Assert.AreEqual("{'type':'stored','password':'secret'}".Replace('\'', '"'), result);
+			Assert.AreEqual("{'type':'stored','password':'secret','name':'(none)','revision':'','site':'pfp.invalid'}".Replace('\'', '"'), result);
 		}
 
 		[Test]

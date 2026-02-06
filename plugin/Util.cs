@@ -10,12 +10,9 @@ namespace Adrium.KeepassPfpConverter.Plugin
 	{
 		public const string RevisionField = "Revision";
 
-		private const string EmptyUrl = "pfp.invalid";
-		private const string EmptyUsername = "(none)";
-		private const string EmptyPassword = "x";
-
 		public static PwEntry GetKeepassEntry(PassEntry entry, GetPassword getPassword, ICollection<string> protect)
 		{
+			var empty = new StoredEntry();
 			var resultidx = new PwEntryIndexer(new PwEntry(true, true), protect);
 			var fields = new Dictionary<string, string>();
 			var notes = ParseNotes(entry.notes ?? "", fields);
@@ -26,18 +23,18 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			var title = entry.name;
 			var pw = getPassword(entry);
 
-			if (!pw.ToLower().Equals(EmptyPassword))
+			if (!pw.ToLower().Equals(empty.password))
 				resultidx[PwDefs.PasswordField] = pw;
 
-			if (!entry.name.ToLower().Equals(EmptyUsername))
+			if (!entry.name.ToLower().Equals(empty.name))
 				resultidx[PwDefs.UserNameField] = entry.name;
 
-			if (!entry.revision.Equals("")) {
+			if (!entry.revision.Equals(empty.revision)) {
 				resultidx[RevisionField] = entry.revision;
 				title = string.Format("{0} #{1}", title, entry.revision);
 			}
 
-			if (!entry.site.Equals(EmptyUrl)) {
+			if (!entry.site.Equals(empty.site)) {
 				resultidx[PwDefs.UrlField] = entry.site;
 				title = string.Format("{0} - {1}", entry.site, title);
 			}
@@ -55,13 +52,14 @@ namespace Adrium.KeepassPfpConverter.Plugin
 		public static PassEntry GetPfpEntry(PwEntry pwEntry)
 		{
 			var entry = new PwEntryIndexer(pwEntry, null);
+			var empty = new StoredEntry();
 			var result = new StoredEntry();
 			var fields = new SortedDictionary<string, string> {
-				{ PwDefs.UserNameField, EmptyUsername },
-				{ PwDefs.PasswordField, EmptyPassword },
-				{ PwDefs.UrlField, EmptyUrl },
-				{ PwDefs.NotesField, "" },
-				{ RevisionField, "" }
+				{ PwDefs.UserNameField, empty.name },
+				{ PwDefs.PasswordField, empty.password },
+				{ PwDefs.UrlField, empty.site },
+				{ PwDefs.NotesField, empty.notes },
+				{ RevisionField, empty.revision }
 			};
 
 			result.notes = "%fields%";

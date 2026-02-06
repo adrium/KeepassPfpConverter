@@ -2,6 +2,6 @@ namespace Adrium.KeepassPfpConverter.Objects
 {
 	public abstract class BaseEntry
 	{
-		public string site;
+		public string site = "pfp.invalid";
 	}
 }
