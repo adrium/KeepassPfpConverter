@@ -12,7 +12,6 @@ namespace Adrium.KeepassPfpConverter.Test
 		[Test]
 		public void TestLoad()
 		{
-			var file = Data.Json;
 			var pfp = new PfpConvert();
 			var entries = pfp.Load(Data.Json, "password");
 
@@ -22,13 +21,19 @@ namespace Adrium.KeepassPfpConverter.Test
 		}
 
 		[Test]
+		public void TestLoadException()
+		{
+			var pfp = new PfpConvert();
+			Assert.Throws<PfpConvert.PfpConvertException>(() => pfp.Load(Data.Invalid, ""));
+		}
+
+		[Test]
 		public void TestSave()
 		{
 			var stream = new MemoryStream();
 			var pfp = new PfpConvert();
-			var list = new List<BaseEntry> {
-				new StoredEntry { site = "example.com", name = "user", password = "secret" },
-			};
+			var entry = new StoredEntry { site = "example.com", name = "user", password = "secret" };
+			var list = new List<BaseEntry> { entry };
 
 			pfp.Save(stream, "password", list);
 
@@ -38,6 +43,17 @@ namespace Adrium.KeepassPfpConverter.Test
 			Assert.AreEqual("example.com", (entries[0] as SiteEntry).site);
 			Assert.AreEqual("user", (entries[1] as StoredEntry).name);
 			Assert.AreEqual("secret", (entries[1] as StoredEntry).password);
+		}
+
+		[Test]
+		public void TestSaveException()
+		{
+			var stream = new MemoryStream();
+			var pfp = new PfpConvert();
+			var entry = new StoredEntry { site = "example.com", name = "user", password = "secret" };
+			var list = new List<BaseEntry> { entry, entry };
+
+			Assert.Throws<PfpConvert.PfpConvertException>(() => pfp.Save(stream, "password", list));
 		}
 
 		[TestCase("secret", ExpectedResult = "secret")]

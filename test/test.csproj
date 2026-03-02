@@ -6,9 +6,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="passwords.json">
-			<LogicalName>passwords.json</LogicalName>
-		</EmbeddedResource>
+		<EmbeddedResource Include="passwords.json" LogicalName="passwords.json" />
+		<EmbeddedResource Include="invalid.json" LogicalName="invalid.json" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -37,9 +37,9 @@ namespace Adrium.KeepassPfpConverter
 			};
 		}
 
-		public class ReaderException : Exception
+		public class PfpConvertException : Exception
 		{
-			public ReaderException(string message) : base(message) { }
+			public PfpConvertException(string message) : base(message) { }
 		}
 
 		private class DeserializedBackup

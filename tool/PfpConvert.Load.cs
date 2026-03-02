@@ -1,8 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using Adrium.KeepassPfpConverter.Algo;
 using Adrium.KeepassPfpConverter.Objects;
+using Newtonsoft.Json;
 using Org.BouncyCastle.Crypto;
 
 namespace Adrium.KeepassPfpConverter
@@ -13,19 +13,25 @@ namespace Adrium.KeepassPfpConverter
 
 		public IList<BaseEntry> Load(Stream stream, string password)
 		{
-			var json = new JsonConvert();
+			DeserializedBackup backup;
 
+			var json = new JsonConvert();
 			var reader = new StreamReader(stream);
-			var backup = json.Deserialize<DeserializedBackup>(reader.ReadToEnd());
+
+			try {
+				backup = json.Deserialize<DeserializedBackup>(reader.ReadToEnd());
+			} catch (JsonSerializationException) {
+				throw new PfpConvertException("Not a PFP file");
+			}
 
 			if (! PFP_APPLICATION.Equals(backup.application))
-				throw new ReaderException($"Unsupported application {backup.application}");
+				throw new PfpConvertException($"Unsupported application {backup.application}");
 
 			if (! (backup.format == 2 || backup.format == 3))
-				throw new ReaderException($"Unsupported format version {backup.format}");
+				throw new PfpConvertException($"Unsupported format version {backup.format}");
 
-			if (! (backup.data.ContainsKey(SALT_KEY) || backup.data.ContainsKey(HMAC_KEY)))
-				throw new ReaderException($"Invalid format");
+			if (backup.data == null || !backup.data.ContainsKey(SALT_KEY) || !backup.data.ContainsKey(HMAC_KEY))
+				throw new PfpConvertException($"Invalid format");
 
 			string str;
 
@@ -37,7 +43,7 @@ namespace Adrium.KeepassPfpConverter
 				str = decrypt(backup.data[HMAC_KEY]);
 			} catch (InvalidCipherTextException e) {
 				if (e.Message.Equals(MAC_MESSAGE))
-					throw new ReaderException("Wrong master password");
+					throw new PfpConvertException("Wrong master password");
 				else
 					throw;
 			}

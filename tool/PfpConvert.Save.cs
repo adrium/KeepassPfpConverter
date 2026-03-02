@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Adrium.KeepassPfpConverter.Algo;
@@ -36,12 +37,19 @@ namespace Adrium.KeepassPfpConverter
 			foreach (var entry in entries) {
 				var data = encrypt(json.Serialize(entry));
 
+				var keystr = entry.site;
 				var key = STORAGE_PREFIX + digest.Digest(entry.site);
 
-				if (entry is PassEntry pass)
-					key += ":" + digest.Digest(pass.site + "\0" + pass.name + "\0" + pass.revision);
+				if (entry is PassEntry pass) {
+					keystr = $"{pass.site} - {pass.name}" + (pass.revision == "" ? "" : $" #{pass.revision}");
+					key += ":" + digest.Digest($"{pass.site}\0{pass.name}\0{pass.revision}");
+				}
 
-				backup.data.Add(key, data);
+				try {
+					backup.data.Add(key, data);
+				} catch (ArgumentException) {
+					throw new PfpConvertException($"Entry already exists: {keystr}");
+				}
 			}
 
 			var writer = new StreamWriter(stream);
