@@ -1,50 +1,36 @@
 using Adrium.KeepassPfpConverter.Objects;
 using KeePassLib;
 using System.Collections.Generic;
-using System.IO;
-using System.Text.RegularExpressions;
 
 namespace Adrium.KeepassPfpConverter.Plugin
 {
 	public static class Util
 	{
 		public const string RevisionField = "Revision";
+		public const string TagsField = "Tags";
 
 		public static PwEntry GetKeepassEntry(PassEntry entry, GetPassword getPassword, ICollection<string> protect)
 		{
 			var empty = new StoredEntry();
 			var resultidx = new PwEntryIndexer(new PwEntry(true, true), protect);
 			var fields = new Dictionary<string, string>();
-			var notes = ParseNotes(entry.notes ?? "", fields);
+			var tags = new List<string>();
 
-			foreach (var field in fields)
-				resultidx[field.Key] = field.Value;
-
-			var title = entry.name;
+			var notes = ParseNotes(entry.notes ?? "", fields, tags);
 			var pw = getPassword(entry);
 
-			if (!pw.ToLower().Equals(empty.password))
-				resultidx[PwDefs.PasswordField] = pw;
+			fields[Util.RevisionField] = entry.revision.ToLower() == empty.revision ? "" : entry.revision;
+			fields[PwDefs.UrlField] = entry.site.ToLower() == empty.site ? "" : entry.site;
+			fields[PwDefs.UserNameField] = entry.name.ToLower() == empty.name ? "" : entry.name;
+			fields[PwDefs.PasswordField] = pw.ToLower() == empty.password ? "" : pw;
+			fields[PwDefs.NotesField] = notes == "" ? "" : notes.Replace("\n", "\r\n");
+			fields[PwDefs.TitleField] = GetTitle(entry);
 
-			if (!entry.name.ToLower().Equals(empty.name))
-				resultidx[PwDefs.UserNameField] = entry.name;
+			foreach (var field in fields)
+				if (field.Value != "")
+					resultidx[field.Key] = field.Value;
 
-			if (!entry.revision.Equals(empty.revision)) {
-				resultidx[RevisionField] = entry.revision;
-				title = string.Format("{0} #{1}", title, entry.revision);
-			}
-
-			if (!entry.site.Equals(empty.site)) {
-				resultidx[PwDefs.UrlField] = entry.site;
-				title = string.Format("{0} - {1}", entry.site, title);
-			}
-
-			resultidx[PwDefs.TitleField] = title;
-
-			notes = notes.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n").Trim();
-
-			if (!notes.Equals(""))
-				resultidx[PwDefs.NotesField] = notes;
+			resultidx.entry.Tags.AddRange(tags);
 
 			return resultidx.entry;
 		}
@@ -54,44 +40,37 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			var entry = new PwEntryIndexer(pwEntry, null);
 			var empty = new StoredEntry();
 			var result = new StoredEntry();
-			var fields = new SortedDictionary<string, string> {
-				{ PwDefs.UserNameField, empty.name },
-				{ PwDefs.PasswordField, empty.password },
-				{ PwDefs.UrlField, empty.site },
-				{ PwDefs.NotesField, empty.notes },
-				{ RevisionField, empty.revision }
-			};
 
-			result.notes = "%fields%";
-			result.notes += ParseNotes(entry[PwDefs.NotesField] ?? "", fields)
-				.Replace("\r\n", "\n").Replace("\r", "\n");
+			var fields = new SortedDictionary<string, string>();
+			var tags = new List<string>();
+
+			fields.Add(RevisionField, "");
+
+			var notes = ParseNotes(entry[PwDefs.NotesField], fields, tags);
+
+			tags.AddRange(pwEntry.Tags);
 
 			foreach (var field in pwEntry.Strings)
-				if (!entry[field.Key].Equals(""))
-					fields[field.Key] = entry[field.Key];
+				fields[field.Key] = entry[field.Key];
 
-			result.site = fields[PwDefs.UrlField];
-			result.name = fields[PwDefs.UserNameField];
-			result.password = fields[PwDefs.PasswordField];
-			result.revision = fields[RevisionField];
+			fields[PwDefs.NotesField] = notes;
+			fields[PwDefs.UrlField] = entry[PwDefs.UrlField];
+			fields[PwDefs.UserNameField] = entry[PwDefs.UserNameField];
+			fields[PwDefs.PasswordField] = entry[PwDefs.PasswordField];
+
+			result.site = fields[PwDefs.UrlField] == "" ? empty.site : GetSitePart(fields[PwDefs.UrlField]);
+			result.name = fields[PwDefs.UserNameField] == "" ? empty.name : fields[PwDefs.UserNameField];
+			result.password = fields[PwDefs.PasswordField] == "" ? result.password : fields[PwDefs.PasswordField];
+			result.revision = fields[RevisionField] == "" ? empty.revision : fields[RevisionField];
 
 			fields.Remove(PwDefs.TitleField);
 			fields.Remove(PwDefs.UserNameField);
 			fields.Remove(PwDefs.PasswordField);
 			fields.Remove(PwDefs.UrlField);
-			fields.Remove(PwDefs.NotesField);
 			fields.Remove(RevisionField);
 
-			foreach (var field in fields) {
-				var value = field.Value.Replace("\r\n", " ").Replace("\n", " ");
-				result.notes = result.notes.Replace("%fields%", string.Format("{0}: {1}\n%fields%", field.Key, value));
-			}
-
-			result.site = GetSitePart(result.site);
-			result.notes = result.notes.Replace("%fields%", "\n").Trim();
-
-			if (result.notes.Equals(""))
-				result.notes = null;
+			notes = BuildNotes(fields, tags);
+			result.notes = notes == "" ? empty.notes : notes;
 
 			return result;
 		}
@@ -109,40 +88,75 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			return result;
 		}
 
-		private static string ParseNotes(string str, IDictionary<string, string> dict)
+		public static string ParseNotes(string notes, IDictionary<string, string> dict, IList<string> tags)
 		{
-			var parsing = true;
-			var reader = new StringReader(str);
-			var matcher = new Regex("([^:]+): (.+)");
 			var result = "";
+			var sect = notes.Replace("\r\n", "\n").Replace("\r", "\n")
+				.Split(new string[] { "\n\n" }, 2, System.StringSplitOptions.None);
 
-			string line;
-			while ((line = reader.ReadLine()) != null) {
-				if (parsing) {
-					var match = matcher.Match(line);
-					if (match.Success)
-						dict[match.Groups[1].Value] = match.Groups[2].Value;
-					else
-						parsing = false;
-				}
-
-				if (!parsing)
-					result += line + "\n";
+			foreach (var line in sect[0].Split('\n')) {
+				var kv = line.Split(new char[] { ':' }, 2);
+				var x = kv.Length == 1 ? "" : kv[0].Trim();
+				var k = x.Contains(" ") ? "" : x;
+				var v = (k == "" ? line : kv[1]).Trim();
+				if (k == "" || k == PwDefs.NotesField)
+					result += v + "\n";
+				else if (k == TagsField)
+					foreach (var tag in v.Split(','))
+						tags.Add(tag.Trim());
+				else if (v != "")
+					dict[k] = v;
 			}
 
+			if (sect.Length == 2)
+				result += sect[1];
+
+			result = result.Trim();
+			return result;
+		}
+
+		public static string BuildNotes(IDictionary<string, string> dict, IList<string> tags)
+		{
+			var notes = "";
+			var kvstr = "";
+
+			if (tags.Count > 0)
+				kvstr += string.Format("{0}: {1}\n", TagsField, string.Join(", ", new List<string>(tags).ToArray()));
+
+			if (dict.Count > 0) {
+				foreach (var pair in dict) {
+					var k = pair.Key.Replace(" ", "").Trim();
+					var v = pair.Value.Replace("\r\n", "\n").Replace("\r", "\n").Trim();
+					if (k == PwDefs.NotesField)
+						notes = v;
+					else if (v != "")
+						kvstr += string.Format("{0}: {1}\n", k, v.Replace("\n", " "));
+				}
+			}
+
+			var result = (kvstr + "\n" + notes).Trim();
+			return result;
+		}
+
+		private static string GetTitle(PassEntry entry)
+		{
+			var empty = new StoredEntry();
+			var result = entry.name;
+			if (entry.site != empty.site)
+				result = string.Format("{0} - {1}", entry.site, result);
+			if (entry.revision != empty.revision)
+				result = string.Format("{0} #{1}", result, entry.revision);
 			return result;
 		}
 
 		private static string GetSitePart(string url)
 		{
 			var result = url;
+			var split = url.Split(new string[] { "://" }, System.StringSplitOptions.None);
 
-			result = result.Replace("https://", "");
-			result = result.Replace("http://", "");
+			result = split.Length == 1 ? split[0] : split[1];
+			result = result.Split('/')[0];
 			result = result.Replace("www.", "");
-
-			if (result.IndexOf("/") >= 0)
-				result = result.Substring(0, result.IndexOf("/"));
 
 			return result;
 		}

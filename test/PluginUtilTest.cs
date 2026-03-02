@@ -20,6 +20,7 @@ namespace Adrium.KeepassPfpConverter.Test
 			Assert.AreEqual(entry.site, resultidx[PwDefs.UrlField]);
 			Assert.AreEqual(entry.name, resultidx[PwDefs.UserNameField]);
 			Assert.AreEqual(entry.password, resultidx[PwDefs.PasswordField]);
+			Assert.IsFalse(resultidx.entry.Strings.Get(PwDefs.UserNameField).IsProtected);
 			Assert.IsTrue(resultidx.entry.Strings.Get(PwDefs.PasswordField).IsProtected);
 		}
 
@@ -36,7 +37,6 @@ namespace Adrium.KeepassPfpConverter.Test
 			Assert.AreEqual("", result.revision);
 		}
 
-		// TODO null and ""
 		[TestCase(PwDefs.UrlField, "pfp.invalid")]
 		[TestCase(PwDefs.UserNameField, "(none)")]
 		[TestCase(PwDefs.PasswordField, "x")]
@@ -52,16 +52,9 @@ namespace Adrium.KeepassPfpConverter.Test
 			Assert.IsEmpty(resultidx[field]);
 		}
 
-		// TODO [TestCase(null, null, null, null, null, null)]
 		[TestCase("", "", "", "", "", "")]
 		[TestCase("", "Notes", "", "Notes", "", "")]
-		[TestCase("rev", "Notes", "rev", "Notes", "", "")]
-		[TestCase("", "Test: OK", "", "", "OK", "")]
-		[TestCase("", "Test: Foo: Bar", "", "", "Foo: Bar", "")]
-		[TestCase("", "Test: OK\nNotes", "", "Notes", "OK", "")]
-		[TestCase("", "Test: OK\nFoo: Bar\nNotes", "", "Notes", "OK", "Bar")]
 		[TestCase("rev", "Test: OK\nFoo: Bar\nNotes", "rev", "Notes", "OK", "Bar")]
-		[TestCase("new", "Revision: old", "new", "", "", "")]
 		public void TestGetKeepassEntryExtraFields(string revin, string notein, string revexp, string noteexp, string testexp, string fooexp)
 		{
 			var entry = GetPfpEntryObject();
@@ -74,6 +67,35 @@ namespace Adrium.KeepassPfpConverter.Test
 			Assert.AreEqual(noteexp, resultidx[PwDefs.NotesField]);
 			Assert.AreEqual(testexp, resultidx["Test"]);
 			Assert.AreEqual(fooexp, resultidx["Foo"]);
+
+			if (testexp == "")
+				Assert.IsFalse(resultidx.entry.Strings.Exists("Test"));
+		}
+
+		[Test]
+		public void TestGetKeepassEntryAmbiguousFields()
+		{
+			var entry = new StoredEntry();
+
+			entry.notes = string.Format("{0}: Tag1\n{1}: Ignore\n{2}: Ignore\n{3}: Ignore\n{4}: One Note\n{5}: Ignore\nMore Notes",
+				Util.TagsField, PwDefs.UrlField, PwDefs.UserNameField, PwDefs.PasswordField, PwDefs.NotesField, Util.RevisionField);
+
+			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new List<string> { }), null);
+
+			Assert.IsFalse(resultidx.entry.Strings.Exists(PwDefs.UrlField));
+			Assert.IsFalse(resultidx.entry.Strings.Exists(PwDefs.UserNameField));
+			Assert.IsFalse(resultidx.entry.Strings.Exists(PwDefs.PasswordField));
+			Assert.IsFalse(resultidx.entry.Strings.Exists(Util.RevisionField));
+			Assert.AreEqual(resultidx[PwDefs.NotesField], "One Note\r\nMore Notes");
+			CollectionAssert.AreEqual(new string[] { "Tag1" }, resultidx.entry.Tags);
+
+			entry.name = "user";
+			resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new List<string> { }), null);
+			Assert.AreEqual("user", resultidx[PwDefs.UserNameField]);
+
+			entry.revision = "new";
+			resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new List<string> { }), null);
+			Assert.AreEqual("new", resultidx[Util.RevisionField]);
 		}
 
 		[Test]
@@ -90,14 +112,14 @@ namespace Adrium.KeepassPfpConverter.Test
 			Assert.AreEqual(null, result.notes);
 		}
 
-		[TestCase("example.com", ExpectedResult = "example.com")]
+		[TestCase("example.com/test", ExpectedResult = "example.com")]
 		[TestCase("http://example.com/test", ExpectedResult = "example.com")]
 		[TestCase("https://example.com/test", ExpectedResult = "example.com")]
 		[TestCase("https://www.example.com/test", ExpectedResult = "example.com")]
 		[TestCase("https://host.example.com/test", ExpectedResult = "host.example.com")]
 		[TestCase("https://www.host.example.com/test", ExpectedResult = "host.example.com")]
 		[TestCase("https://sub.host.example.com/test", ExpectedResult = "sub.host.example.com")]
-		// TODO [TestCase("ftp://example.com/test", ExpectedResult = "example.com")]
+		[TestCase("ftp://example.com/test", ExpectedResult = "example.com")]
 		public string TestGetPfpEntryUrlField(string value)
 		{
 			var entry = GetKeepassEntryObject();
@@ -108,14 +130,9 @@ namespace Adrium.KeepassPfpConverter.Test
 			return result.site;
 		}
 
-		[TestCase(null, null, null, null, "", null)]
-		[TestCase(null, null, "OK", null, "", "Test: OK")]
 		[TestCase(null, null, "OK", "Bar", "", "Foo: Bar\nTest: OK")]
-		[TestCase(null, "Notes\r\nNewline", "OK", "Bar", "", "Foo: Bar\nTest: OK\n\nNotes\nNewline")]
-		[TestCase(null, "Hello: World\r\nNotes\r\nNewline", "OK", "Bar", "", "Foo: Bar\nHello: World\nTest: OK\n\nNotes\nNewline")]
-		[TestCase(null, "Notes\r\nHello: World\r\nNewline", "OK", "Bar", "", "Foo: Bar\nTest: OK\n\nNotes\nHello: World\nNewline")]
-		[TestCase("rev", "Notes", "OK", null, "rev", "Test: OK\n\nNotes")]
-		[TestCase("rev", "Test: Conflict\nNotes", "OK", null, "rev", "Test: OK\n\nNotes")]
+		[TestCase(null, "Hello: World\r\nTest: Fail\r\nNotes", "OK", "Bar", "", "Foo: Bar\nHello: World\nTest: OK\n\nNotes")]
+		[TestCase(null, "Revision: rev", "", "", "rev", null)]
 		[TestCase("new", "Revision: old\nNotes", "OK", null, "new", "Test: OK\n\nNotes")]
 		public void TestGetPfpEntryNotesField(string revin, string notein, string testin, string fooin, string revexp, string noteexp)
 		{
@@ -131,14 +148,35 @@ namespace Adrium.KeepassPfpConverter.Test
 			Assert.AreEqual(noteexp, result.notes);
 		}
 
-		private StoredEntry GetPfpEntryObject()
+		[Test]
+		public void TestGetPfpEntryAmbiguousFields()
 		{
-			return new StoredEntry {
-				site = "example.com",
-				name = "user",
-				password = "secret",
-				revision = ""
-			};
+			var empty = new StoredEntry();
+			var entry = GetKeepassEntryObject();
+			entry.entry.Strings.Clear();
+
+			entry[PwDefs.NotesField] = string.Format("{0}: Tag1\n{1}: Ignore\n{2}: Ignore\n{3}: Ignore\n{4}: One Note\n{5}: old\nMore Notes",
+				Util.TagsField, PwDefs.UrlField, PwDefs.UserNameField, PwDefs.PasswordField, PwDefs.NotesField, Util.RevisionField);
+
+			var result = Util.GetPfpEntry(entry.entry) as StoredEntry;
+
+			Assert.AreEqual(empty.site, result.site);
+			Assert.AreEqual(empty.name, result.name);
+			Assert.AreEqual(empty.password, result.password);
+			Assert.AreEqual("old", result.revision);
+			Assert.AreEqual("Tags: Tag1\n\nOne Note\nMore Notes", result.notes);
+
+			entry[PwDefs.UserNameField] = "user";
+			result = Util.GetPfpEntry(entry.entry) as StoredEntry;
+			Assert.AreEqual("user", result.name);
+
+			entry[Util.RevisionField] = "new";
+			result = Util.GetPfpEntry(entry.entry) as StoredEntry;
+			Assert.AreEqual("new", result.revision);
+
+			entry.entry.Tags.Add("Tag2");
+			result = Util.GetPfpEntry(entry.entry) as StoredEntry;
+			Assert.AreEqual("Tags: Tag1, Tag2\n\nOne Note\nMore Notes", result.notes);
 		}
 
 		[Test]
@@ -155,6 +193,57 @@ namespace Adrium.KeepassPfpConverter.Test
 			CollectionAssert.DoesNotContain(result, PwDefs.UrlField);
 		}
 
+		[TestCase("", "", new string[0], new string[0])]
+		[TestCase(": Colon", "<SAME>", new string[0], new string[0])]
+		[TestCase("Hello World", "<SAME>", new string[0], new string[0])]
+		[TestCase("Relevant Hint: No dict for keys with spaces", "<SAME>", new string[0], new string[0])]
+		[TestCase(" Key : Value : Pair  ", "", new string[] { "Key", "Value : Pair" }, new string[0])]
+		[TestCase("Key: Old\nKey:Value \n\nNote", "Note", new string[] { "Key", "Value" }, new string[0])]
+		[TestCase("Note1\nKey: Value\nEmpty:  \n\nNote2", "Note1\nNote2", new string[] { "Key", "Value" }, new string[0])]
+		[TestCase("Note1\nKey: Value\nNotes: Note2\n\nNote3", "Note1\nNote2\nNote3", new string[] { "Key", "Value" }, new string[0])]
+		[TestCase("Key: Value\n\nForce: Note", "Force: Note", new string[] { "Key", "Value" }, new string[0])]
+		[TestCase("Key: Value\nTags: T1 , T2\n\nNote", "Note", new string[] { "Key", "Value" }, new string[] { "T1", "T2" })]
+		public void TestParseNotes(string notein, string noteexp, string[] dictexpa, string[] listexpa)
+		{
+			var dictexp = ArrayToDict(dictexpa);
+			var listexp = ArrayToList(listexpa);
+
+			var dict = new Dictionary<string, string>();
+			var list = new List<string>();
+
+			var note = Util.ParseNotes(notein, dict, list);
+
+			Assert.AreEqual(noteexp == "<SAME>" ? notein : noteexp, note);
+			CollectionAssert.AreEquivalent(dictexp, dict);
+			CollectionAssert.AreEquivalent(listexp, list);
+		}
+
+		[TestCase(new string[0], new string[0], "")]
+		[TestCase(new string[] { "Key", "" }, new string[0], "")]
+		[TestCase(new string[] { "Key ", "Value " }, new string[0], "Key: Value")]
+		[TestCase(new string[] { "Hello World", "Foo\r\nBar\r\n" }, new string[0], "HelloWorld: Foo Bar")]
+		[TestCase(new string[] { "Hello World", "Foo\r\nBar", PwDefs.NotesField, "This is\r\na note." }, new string[] { "T1", "T2" }, "Tags: T1, T2\nHelloWorld: Foo Bar\n\nThis is\na note.")]
+		public void TestBuildNotes(string[] dictina, string[] listina, string noteexp)
+		{
+			var dictin = ArrayToDict(dictina);
+			var listin = ArrayToList(listina);
+
+			var note = Util.BuildNotes(dictin, listin);
+
+			Assert.AreEqual(noteexp, note);
+		}
+
+		private StoredEntry GetPfpEntryObject()
+		{
+			return new StoredEntry
+			{
+				site = "example.com",
+				name = "user",
+				password = "secret",
+				revision = ""
+			};
+		}
+
 		private PwEntryIndexer GetKeepassEntryObject()
 		{
 			return new PwEntryIndexer(new PwEntry(true, true), new List<string> { }) {
@@ -162,6 +251,20 @@ namespace Adrium.KeepassPfpConverter.Test
 				[PwDefs.UserNameField] = "user",
 				[PwDefs.PasswordField] = "secret",
 			};
+		}
+
+		private IDictionary<T, T> ArrayToDict<T>(T[] a)
+		{
+			var result = new Dictionary<T, T>();
+			var i = 0;
+			while (i < a.Length)
+				result.Add(a[i++], a[i++]);
+			return result;
+		}
+
+		private IList<T> ArrayToList<T>(T[] a)
+		{
+			return new List<T>(a);
 		}
 
 		private GetPassword Fn()
