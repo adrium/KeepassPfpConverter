@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<AssemblyName>Adrium.KeepassPfpConverter.Test</AssemblyName>
 		<TargetFramework>net80</TargetFramework>
+		<NoWarn>NU1701;NU1702</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>

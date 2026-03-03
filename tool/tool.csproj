@@ -15,7 +15,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="BouncyCastle" Version="1.*" />
+		<PackageReference Include="BouncyCastle" Version="1.*" NoWarn="NU1902" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.*" />
 	</ItemGroup>
 
