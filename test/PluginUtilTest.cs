@@ -47,9 +47,9 @@ namespace Adrium.KeepassPfpConverter.Test
 			if (field == PwDefs.UserNameField) entry.name = value;
 			if (field == PwDefs.PasswordField) entry.password = value;
 
-			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new List<string> { }), null);
+			var result = Util.GetKeepassEntry(entry, Fn(), new List<string>());
 
-			Assert.IsEmpty(resultidx[field]);
+			Assert.IsEmpty(PwEntryIndexer.GetString(result, field));
 		}
 
 		[TestCase("", "", "", "", "", "")]
@@ -61,15 +61,15 @@ namespace Adrium.KeepassPfpConverter.Test
 			entry.revision = revin;
 			entry.notes = notein;
 
-			var resultidx = new PwEntryIndexer(Util.GetKeepassEntry(entry, Fn(), new List<string> { }), null);
+			var result = Util.GetKeepassEntry(entry, Fn(), new List<string> { });
 
-			Assert.AreEqual(revexp, resultidx[Util.RevisionField]);
-			Assert.AreEqual(noteexp, resultidx[PwDefs.NotesField]);
-			Assert.AreEqual(testexp, resultidx["Test"]);
-			Assert.AreEqual(fooexp, resultidx["Foo"]);
+			Assert.AreEqual(revexp, PwEntryIndexer.GetString(result, Util.RevisionField));
+			Assert.AreEqual(noteexp, PwEntryIndexer.GetString(result, PwDefs.NotesField));
+			Assert.AreEqual(testexp, PwEntryIndexer.GetString(result, "Test"));
+			Assert.AreEqual(fooexp, PwEntryIndexer.GetString(result, "Foo"));
 
 			if (testexp == "")
-				Assert.IsFalse(resultidx.entry.Strings.Exists("Test"));
+				Assert.IsFalse(result.Strings.Exists("Test"));
 		}
 
 		[Test]
