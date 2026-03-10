@@ -35,7 +35,7 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			return resultidx.entry;
 		}
 
-		public static PassEntry GetPfpEntry(PwEntry pwEntry)
+		public static StoredEntry GetPfpEntry(PwEntry pwEntry)
 		{
 			var entry = new PwEntryIndexer(pwEntry, null);
 			var empty = new StoredEntry();

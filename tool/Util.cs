@@ -18,7 +18,7 @@ namespace Adrium.KeepassPfpConverter
 			return result;
 		}
 
-		public static IList<BaseEntry> GenerateSiteEntries(IList<BaseEntry> entries)
+		public static IList<BaseEntry> GenerateSiteEntries(IEnumerable<BaseEntry> entries)
 		{
 			var result = new List<BaseEntry>();
 			var need = new Dictionary<string, int>();

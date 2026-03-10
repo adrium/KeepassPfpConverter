@@ -12,7 +12,7 @@ namespace Adrium.KeepassPfpConverter
 		private const int HMAC_LENGTH = 32;
 		private const int SALT_LENGTH = 16;
 
-		public void Save(Stream stream, string password, IList<BaseEntry> entries)
+		public void Save(Stream stream, string password, IEnumerable<BaseEntry> entries)
 		{
 			var backup = new DeserializedBackup {
 				application = PFP_APPLICATION,

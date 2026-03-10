@@ -18,7 +18,8 @@ namespace Adrium.KeepassPfpConverter.Plugin
 
 			slLogger.SetText("Collecting entries...", LogStatusType.Info);
 
-			var entries = ConvertGroup(pwExportInfo.DataGroup, slLogger);
+			var entries = new List<BaseEntry>();
+			ConvertGroup(pwExportInfo.DataGroup, slLogger, entries, new DedupList(), "");
 
 			slLogger.SetText("Encrypting backup...", LogStatusType.Info);
 
@@ -30,21 +31,18 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			return true;
 		}
 
-		private IList<BaseEntry> ConvertGroup(PwGroup pwGroup, IStatusLogger slLogger)
+		private void ConvertGroup(PwGroup pwGroup, IStatusLogger slLogger, IList<BaseEntry> list, DedupList dup, string prefix)
 		{
-			var result = new List<BaseEntry>();
-
+			prefix = prefix + pwGroup.Name + "/";
 			foreach (var pwEntry in pwGroup.Entries) {
+				var title = prefix + PwEntryIndexer.GetString(pwEntry, PwDefs.TitleField);
 				var entry = Util.GetPfpEntry(pwEntry);
-				result.Add(entry);
+				dup.Deduplicate(entry, title);
+				list.Add(entry);
 			}
 
-			foreach (var pwSubGroup in pwGroup.Groups) {
-				var subEntries = ConvertGroup(pwSubGroup, slLogger);
-				result.AddRange(subEntries);
-			}
-
-			return result;
+			foreach (var pwSubGroup in pwGroup.Groups)
+				ConvertGroup(pwSubGroup, slLogger, list, dup, prefix);
 		}
 	}
 }
