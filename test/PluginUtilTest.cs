@@ -10,6 +10,23 @@ namespace Adrium.KeepassPfpConverter.Test
 	public class PluginUtilTest
 	{
 		[Test]
+		public void TestGetKeepassAlias()
+		{
+			var entry = new SiteEntry { site = "testing.local", alias = "example.com" };
+			var resultidx = new PwEntryIndexer(Util.GetKeepassAlias(entry), null);
+
+			Assert.AreEqual("testing.local", resultidx[PwDefs.TitleField]);
+			Assert.AreEqual("example.com", resultidx[PwDefs.UrlField]);
+			Assert.AreEqual(Util.AliasUser, resultidx[PwDefs.UserNameField]);
+			Assert.AreEqual("", resultidx[PwDefs.PasswordField]);
+
+			var resultpfp = Util.GetPfpAlias(resultidx.entry);
+
+			Assert.AreEqual(entry.site, resultpfp.site);
+			Assert.AreEqual(entry.alias, resultpfp.alias);
+		}
+
+		[Test]
 		public void TestGetKeepassEntrySimple()
 		{
 			var entry = GetPfpEntryObject();

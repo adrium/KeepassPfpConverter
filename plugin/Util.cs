@@ -6,8 +6,32 @@ namespace Adrium.KeepassPfpConverter.Plugin
 {
 	public static class Util
 	{
+		public const string AliasUser = "alias";
 		public const string RevisionField = "Revision";
 		public const string TagsField = "Tags";
+
+		public static PwEntry GetKeepassAlias(SiteEntry entry)
+		{
+			var resultidx = new PwEntryIndexer(new PwEntry(true, true), new string[0]);
+			resultidx[PwDefs.TitleField] = entry.site;
+			resultidx[PwDefs.UrlField] = entry.alias;
+			resultidx[PwDefs.UserNameField] = AliasUser;
+			return resultidx.entry;
+		}
+
+		public static SiteEntry GetPfpAlias(PwEntry pwEntry)
+		{
+			var entry = new PwEntryIndexer(pwEntry, null);
+			var user = entry[PwDefs.UserNameField];
+			var pass = entry[PwDefs.PasswordField];
+			var site = entry[PwDefs.TitleField];
+			var alias = entry[PwDefs.UrlField];
+
+			if (user == AliasUser && pass == "" && site.Contains(".") && !site.Contains(" "))
+				return new SiteEntry { site = GetSitePart(site), alias = GetSitePart(alias) };
+
+			return null;
+		}
 
 		public static PwEntry GetKeepassEntry(PassEntry entry, GetPassword getPassword, ICollection<string> protect)
 		{
