@@ -30,14 +30,23 @@ namespace Adrium.KeepassPfpConverter.Plugin
 			var i = 0;
 
 			foreach (var baseentry in entries) {
+				var pwEntry = new PwEntry(true, true);
+				var emptyalias = new SiteEntry();
+
 				var entry = baseentry as PassEntry;
+				var alias = baseentry as SiteEntry;
 
-				if (entry == null)
-					continue;
+				if (entry != null) {
+					slLogger.SetText(string.Format("Importing {0} - {1} - {2}...", i, entry.site, entry.name), LogStatusType.Info);
 
-				slLogger.SetText(string.Format("Importing {0} - {1} - {2}...", i, entry.site, entry.name), LogStatusType.Info);
+					pwEntry = Util.GetKeepassEntry(entry, pw, protect);
+				}
 
-				var pwEntry = Util.GetKeepassEntry(entry, pw, protect);
+				if (alias != null) {
+					if (alias.alias == emptyalias.alias)
+						continue;
+					pwEntry = Util.GetKeepassAlias(alias);
+				}
 
 				pwStorage.RootGroup.AddEntry(pwEntry, true);
 				i++;

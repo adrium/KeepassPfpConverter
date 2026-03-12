@@ -34,7 +34,16 @@ namespace Adrium.KeepassPfpConverter.Plugin
 		private void ConvertGroup(PwGroup pwGroup, IStatusLogger slLogger, IList<BaseEntry> list, DedupList dup, string prefix)
 		{
 			prefix = prefix + pwGroup.Name + "/";
+
 			foreach (var pwEntry in pwGroup.Entries) {
+				if (PwEntryIndexer.GetString(pwEntry, PwDefs.UserNameField) == Util.AliasUser) {
+					var alias = Util.GetPfpAlias(pwEntry);
+					if (alias != null) {
+						list.Add(alias);
+						continue;
+					}
+				}
+
 				var title = prefix + PwEntryIndexer.GetString(pwEntry, PwDefs.TitleField);
 				var entry = Util.GetPfpEntry(pwEntry);
 				dup.Deduplicate(entry, title);
